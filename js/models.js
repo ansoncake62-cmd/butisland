@@ -1,22 +1,58 @@
 import * as T from 'three';
-import {P} from './palette.js?v=20261023135806';
-import {terrain} from './coast.js?v=20261023135806';
-import {group,box,cyl,ball,line,roof,spire,path,tree,plant,bench,windowPane,fence,umbrella,board} from './primitives.js?v=20261023135806';
+import {P} from './palette.js?v=20261024091636';
+import {terrain} from './coast.js?v=20261024091636';
+import {group,box,cyl,ball,line,roof,spire,path,tree,plant,bench,windowPane,fence,umbrella,board} from './primitives.js?v=20261024091636';
 export function islandBase(parent,r,height,color,seed=0,options={}){return terrain(parent,r,color,seed,options);}
 
 // 10/23 熊爸選 B：熊爸家改成參考影片那種小城堡——石牆主館＋魚鱗瓦階梯山牆、兩座圓塔尖頂、一座方塔城垛。
 function merlons(parent,cx,cz,w,d,y,size=.32){const n=Math.max(2,Math.round(w/.7)),m=Math.max(2,Math.round(d/.7));for(let i=0;i<=n;i++)for(const z of [-d/2,d/2])if(i%2===0)box(parent,size,size*1.2,size,P.wallDark,cx-w/2+w*i/n,y,cz+z);for(let i=1;i<m;i++)for(const x of [-w/2,w/2])if(i%2===0)box(parent,size,size*1.2,size,P.wallDark,cx+x,y,cz-d/2+d*i/m);}
 function roundTower(parent,x,z,r,h){const t=group(parent,x,0,z);cyl(t,r,h,P.wall,0,h/2+.3,0,12,r*1.08);cyl(t,r*1.12,.3,P.wallDark,0,.45,0,12);windowPane(t,0,h*.62,r*.98,.35,.55);spire(t,r*1.25,r*2.6,0,h+.3,0);return t;}
-function house(g,x,z,scale=1){const h=group(g,x,0,z);h.scale.setScalar(scale);
+// 10/23 熊爸：城堡加成兩層樓（中間石腰線、二樓三窗＋陽台），大門改成拱石門框的氣派雙開門。
+function grandDoor(h,z){const d=group(h,0,0,z),w=1.6,top=2.05,r=w/2;
+ box(d,w+.3,top-.3+.1,.1,P.ink,0,(top+.3)/2,-.02);const back=cyl(d,r+.12,.1,P.ink,0,top,-.02,14);back.rotation.x=Math.PI/2;
+ for(const s of [-1,1]){box(d,r-.03,top-.3,.14,P.coffee,s*r/2,(top+.3)/2,.04);
+  for(const y of [.75,1.35,1.9])box(d,r-.12,.07,.05,P.ink,s*r/2,y,.13);
+  ball(d,.07,P.mustard,s*.2,1.25,.15);}
+ const arch=cyl(d,r-.03,.14,P.coffee,0,top,.04,14);arch.rotation.x=Math.PI/2;box(d,.04,top+r-.35,.16,P.ink,0,(top+r+.3)/2,.06);
+ for(let i=0;i<=8;i++){const a=Math.PI*i/8,R=r+.22,v=box(d,i===4?.36:.28,i===4?.42:.3,.24,i===4?P.cream:P.wallDark,Math.cos(a)*R,top+Math.sin(a)*R,.06);v.rotation.z=a-Math.PI/2;}
+ for(const s of [-1,1]){box(d,.28,top-.3,.24,P.wallDark,s*(r+.22),(top+.3)/2,.06);
+  const l=group(d,s*(r+.58),2.05,.1);box(l,.08,.32,.18,P.ink,0,0,0);box(l,.06,.06,.3,P.ink,0,.12,.14);box(l,.3,.07,.3,P.ink,0,.12,.32);box(l,.22,.07,.22,P.ink,0,-.3,.32);cyl(l,.05,.12,P.ink,0,.2,.32,6);box(l,.17,.32,.17,P.lamp,0,-.09,.32);}}
+// 10/23 熊爸：狗頭改成直接刻在山牆上的浮雕（熊爸：取消後面的石板）——圖的線條轉成石色，疊幾層往前推出厚度（後暗前亮）。
+function stoneRelief(parent,url,x,y,z,size,sunken=false){const p=group(parent,x,y,z);
+
+ const img=new Image();img.onload=()=>{const src=document.createElement('canvas');src.width=img.width;src.height=img.height;const sx=src.getContext('2d');sx.drawImage(img,0,0);
+  // 熊爸：舌頭中線要做出來——粉紅填色不刻，只刻咖啡色線條，舌頭就剩外框＋中線。
+  const px=sx.getImageData(0,0,src.width,src.height);for(let i=0;i<px.data.length;i+=4)if(px.data[i]>160)px.data[i+3]=0;sx.putImageData(px,0,0);
+  // 熊爸選 A：做成家徽——盾形雙線外框包住狗頭，盾下一條飄帶刻 BUT SO COOL。
+  const art=document.createElement('canvas');art.width=1000;art.height=1150;const g2=art.getContext('2d');g2.strokeStyle=g2.fillStyle='#000';g2.lineJoin='round';
+  const shield=k=>{g2.beginPath();g2.moveTo(110+k,70+k);g2.lineTo(500,120+k*.6);g2.lineTo(890-k,70+k);g2.lineTo(890-k,520);g2.quadraticCurveTo(880-k*.9,800-k*.3,500,960-k*1.3);g2.quadraticCurveTo(120+k*.9,800-k*.3,110+k,520);g2.closePath();g2.stroke();};
+  g2.lineWidth=24;shield(0);g2.lineWidth=11;shield(40);
+  const dw=600,dh=dw*img.height/img.width;g2.drawImage(src,500-dw/2,480-dh/2,dw,dh);
+  g2.lineWidth=16;g2.beginPath();g2.moveTo(120,905);g2.quadraticCurveTo(500,1010,880,905);g2.lineTo(880,1035);g2.quadraticCurveTo(500,1140,120,1035);g2.closePath();g2.stroke();
+  for(const sd of [-1,1]){g2.beginPath();g2.moveTo(500+sd*380,935);g2.lineTo(500+sd*470,925);g2.lineTo(500+sd*430,990);g2.lineTo(500+sd*480,1065);g2.lineTo(500+sd*380,1045);g2.stroke();}
+  g2.font='bold 78px Georgia, "Times New Roman", serif';g2.textAlign='center';g2.textBaseline='middle';g2.letterSpacing='10px';g2.fillText('BUT SO COOL',500,1022);
+  const c=document.createElement('canvas');c.width=art.width;c.height=art.height;const x2=c.getContext('2d');
+  for(const [dx,dy] of [[0,0],[3,0],[-3,0],[0,3],[0,-3],[2,2],[-2,-2],[2,-2],[-2,2]])x2.drawImage(art,dx,dy);
+  x2.globalCompositeOperation='source-in';x2.fillStyle='#fff';x2.fillRect(0,0,c.width,c.height);
+  const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;const geo=new T.PlaneGeometry(size,size*c.height/c.width),shades=['#8E8296','#A397AA','#B6AABC','#C9BECD','#DDD3DF'];
+  // 熊爸：陰雕看看——線條往牆裡刻：右下緣受光、溝底與左上緣是陰影。
+  const layers=sunken?[['#EFE7F0',.014,-.014],['#8A7E92',0,0],['#6E6378',-.008,.008]]:shades.map((col,k)=>[col,-.012*(4-k),-.012*(4-k)]);
+  layers.forEach(([col,dx,dy],k)=>{const m=new T.Mesh(geo,new T.MeshLambertMaterial({map:tex,color:col,transparent:true,alphaTest:.4}));m.position.set(dx,dy,k*.004+(sunken?.005:k*.01));p.add(m);});};
+ img.src=url;return p;}
+function house(g,x,z,scale=1){const h=group(g,x,0,z);h.scale.setScalar(scale);const H=5.4;
  cyl(h,3.3,.3,P.wallDark,0,.3,0,10).scale.set(1.15,1,.85);
- box(h,4.6,3.2,3.4,P.wall,0,1.9,0);for(let i=0;i<5;i++)box(h,4.65,.05,3.45,P.wallDark,0,.9+i*.62,0);
- roof(h,5.2,4,2.1,P.coffee,0,3.5,0);
- box(h,1,1.7,.16,P.coffee,0,1.15,1.72);const arch=cyl(h,.5,.16,P.coffee,0,2,1.72,10);arch.rotation.x=Math.PI/2;box(h,1.4,.2,.25,P.wallDark,0,2.6,1.75);
- for(const dx of [-1.5,1.5])windowPane(h,dx,2.1,1.72,.6,.9);
- roundTower(h,-2.75,1.55,.85,3.6);roundTower(h,2.9,-1.6,.95,4.4);
- const sq=group(h,-2.5,0,-1.9);box(sq,1.7,4.6,1.7,P.wall,0,2.6,0);merlons(sq,0,0,1.7,1.7,5.05);windowPane(sq,0,3.4,.86,.35,.6);
- box(h,.6,1.4,.7,P.terra,1.3,4.9,-.6);
- for(let i=0;i<3;i++)box(h,1.4,.2,.6,P.cobbleDark,0,.15+i*.18,2.4-i*.35);return h;
+ box(h,4.6,H,3.4,P.wall,0,.3+H/2,0);for(let i=0;i<8;i++)if(i!==4)box(h,4.65,.05,3.45,P.wallDark,0,.9+i*.62,0);
+ box(h,4.85,.22,3.65,P.wallDark,0,3.2,0);box(h,4.8,.18,3.6,P.wallDark,0,.3+H,0);
+ roof(h,5.2,4,2.1,P.coffee,0,.3+H,0);
+ grandDoor(h,1.72);
+ for(const dx of [-1.9,1.9])windowPane(h,dx,1.85,1.72,.42,.8);
+ for(const dx of [-1.55,0,1.55])windowPane(h,dx,4.35,1.72,.6,1);
+ const bal=group(h,0,3.45,1.95);box(bal,1.4,.14,.6,P.wallDark,0,0,0);for(let i=0;i<6;i++)box(bal,.09,.42,.09,P.wall,-.6+i*.24,.28,.26);box(bal,1.4,.09,.12,P.wallDark,0,.52,.26);for(const s of [-1,1])box(bal,.09,.42,.5,P.wall,s*.66,.28,0);
+ stoneRelief(h,'assets/brand/狗頭_折線.png',0,6.38,2.2,1.1,true);
+ roundTower(h,-2.75,1.55,.85,5.8);roundTower(h,2.9,-1.6,.95,6.8);
+ const sq=group(h,-2.5,0,-1.9);box(sq,1.7,6.8,1.7,P.wall,0,3.7,0);merlons(sq,0,0,1.7,1.7,7.25);windowPane(sq,0,5.4,.86,.35,.6);windowPane(sq,0,3,.86,.35,.6);
+ box(h,.6,1.4,.7,P.terra,1.3,7.1,-.6);
+ for(let i=0;i<3;i++)box(h,2.4-i*.2,.2,.6,P.cobbleDark,0,.15+i*.18,2.4-i*.35);return h;
 }
 export function home(g){house(g,.6,-4.8,2.15);tree(g,-4.6,2.8,1.1,true);tree(g,5.4,-2.7,.7,true);
  const deck=group(g,3.8,0,3);box(deck,2.1,.18,1.5,P.wood,0,1.35,0);for(const x of [-.7,.7])box(deck,.13,1.3,.8,P.darkWood,x,.7,0);bench(g,3.8,4.5);bench(g,3.8,1.5,Math.PI);
@@ -25,7 +61,7 @@ export function home(g){house(g,.6,-4.8,2.15);tree(g,-4.6,2.8,1.1,true);tree(g,5
  cyl(g,2.3,.06,P.sea,15.5,.35,-4.5,28);cyl(g,2.55,.04,'#E3CDA6',15.5,.33,-4.5,28);for(let i=0;i<8;i++)ball(g,.24+(i%3)*.07,P.cliff,15.5+Math.cos(i*.8)*2.5,.4,-4.5+Math.sin(i*.8)*2.5);
  cyl(g,.35,.18,P.pink,1,.4,2,12);ball(g,.21,P.mustard,-2,.5,3.5);box(g,.5,.75,.45,P.terra,5,.65,5);cyl(g,.07,1,P.darkWood,5,.6,5,6);
  for(let i=0;i<4;i++)plant(g,-2.5+i*.7,1,P.pink);
- board(g,0,6.6);bench(g,-11.5,-4,1.2);return {logo:[.6,4.4,-1.1]};
+ board(g,0,6.6);bench(g,-11.5,-4,1.2);return {};
 }
 function marketStall(g,x,z,color){const s=group(g,x,0,z);box(s,2.6,1.15,1.2,P.wood,0,.8,0);for(const a of [-1.25,1.25])box(s,.1,2.6,.1,P.darkWood,a,1.55,0);for(let i=0;i<8;i++){box(s,.36,.12,2,i%2?P.cream:color,-1.25+i*.36,2.9,0);box(s,.36,.45,.07,i%2?P.cream:color,-1.25+i*.36,2.62,1);}
  for(let i=0;i<3;i++){box(s,.6,.25,.55,i===1?P.pink:P.cream,-.8+i*.8,1.52,0);ball(s,.13,P.mustard,-.9+i*.85,2.45,.6);}return s;

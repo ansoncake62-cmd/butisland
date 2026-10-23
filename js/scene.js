@@ -1,15 +1,15 @@
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/OrbitControls.js';
 import {CSS2DRenderer,CSS2DObject} from 'three/addons/CSS2DRenderer.js';
-import {P} from './palette.js?v=20261023135806';
-import {R,axial,BRIDGES} from './world.js?v=20261023135806';
-import {group,box,cyl,ball,line,path,tree,umbrella,mat,roof} from './primitives.js?v=20261023135806';
-import {islandBase,builders} from './models.js?v=20261023135806';
-import {coastRadius,coastline,coastBand,surface,bulges} from './coast.js?v=20261023135806';
-import {createPeople} from './people.js?v=20261023135806';
-import {buildTrack,createCreatures} from './creatures.js?v=20261023135806';
-import {batchScenery} from './static-scene.js?v=20261023135806';
-import {createEnvironment} from './env.js?v=20261023135806';
+import {P} from './palette.js?v=20261024091636';
+import {R,axial,BRIDGES} from './world.js?v=20261024091636';
+import {group,box,cyl,ball,line,path,tree,umbrella,mat,roof} from './primitives.js?v=20261024091636';
+import {islandBase,builders} from './models.js?v=20261024091636';
+import {coastRadius,coastline,coastBand,surface,bulges} from './coast.js?v=20261024091636';
+import {createPeople} from './people.js?v=20261024091636';
+import {buildTrack,createCreatures} from './creatures.js?v=20261024091636';
+import {batchScenery} from './static-scene.js?v=20261024091636';
+import {createEnvironment} from './env.js?v=20261024091636';
 export function createScene(data,onSelect,onGuest,onHost,onCreature){
  const stage=document.querySelector('#stage'),labelRoot=document.querySelector('#labels');
  const mobile=()=>innerWidth<=600;
@@ -36,7 +36,7 @@ export function createScene(data,onSelect,onGuest,onHost,onCreature){
  const ring=new T.Mesh(coastBand(land.points,1.18,1.22,-3.7,-3.7),new T.MeshBasicMaterial({color:P.pink,side:T.DoubleSide,transparent:true,opacity:.9}));ring.visible=false;g.add(ring);
  const outer=document.createElement('div');outer.className='label-anchor';outer.style.width='0';outer.style.height='0';const b=document.createElement('button');b.className='island-label';b.dataset.island=item.id;b.setAttribute('aria-label',`探索${item.name}`);b.innerHTML=`<b>${item.number}</b><span>${item.name}</span><span class="arrow">↗</span>`;b.onclick=e=>{e.stopPropagation();onSelect(item.id);};outer.append(b);
  const label=new CSS2DObject(outer);label.position.set(0,.5,r*.7);g.add(label);labelItems.push({label,button:b,id:item.id});
- if(result.logo){const m=new T.Mesh(new T.PlaneGeometry(.7,.7),new T.MeshBasicMaterial({map:texture,transparent:true}));m.position.set(...result.logo);g.add(m);}
+ if(result.logo){const m=new T.Mesh(new T.PlaneGeometry(result.logoSize||.7,result.logoSize||.7),new T.MeshBasicMaterial({map:texture,transparent:true}));m.position.set(...result.logo);g.add(m);}
  if(result.sign){const div=document.createElement('div');div.className='model-sign'+(item.id==='market'?' market-sign':'');div.textContent=item.id==='help'?'熊小幫':'開團資料・待補';const sign=new CSS2DObject(div);sign.position.set(result.sign[0]*(item.id==='market'?.78:1),result.sign[1],result.sign[2]*(1));g.add(sign);}
  islands.set(item.id,{g,p,item,ring,r,seed,landings});walkGraph[item.id]=[];
  }
