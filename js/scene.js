@@ -1,15 +1,15 @@
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/OrbitControls.js';
 import {CSS2DRenderer,CSS2DObject} from 'three/addons/CSS2DRenderer.js';
-import {P} from './palette.js?v=20261023135513';
-import {R,axial,BRIDGES} from './world.js?v=20261023135513';
-import {group,box,cyl,ball,line,path,tree,umbrella,mat,roof} from './primitives.js?v=20261023135513';
-import {islandBase,builders} from './models.js?v=20261023135513';
-import {coastRadius,coastline,coastBand,surface,bulges} from './coast.js?v=20261023135513';
-import {createPeople} from './people.js?v=20261023135513';
-import {buildTrack,createCreatures} from './creatures.js?v=20261023135513';
-import {batchScenery} from './static-scene.js?v=20261023135513';
-import {createEnvironment} from './env.js?v=20261023135513';
+import {P} from './palette.js?v=20261023135806';
+import {R,axial,BRIDGES} from './world.js?v=20261023135806';
+import {group,box,cyl,ball,line,path,tree,umbrella,mat,roof} from './primitives.js?v=20261023135806';
+import {islandBase,builders} from './models.js?v=20261023135806';
+import {coastRadius,coastline,coastBand,surface,bulges} from './coast.js?v=20261023135806';
+import {createPeople} from './people.js?v=20261023135806';
+import {buildTrack,createCreatures} from './creatures.js?v=20261023135806';
+import {batchScenery} from './static-scene.js?v=20261023135806';
+import {createEnvironment} from './env.js?v=20261023135806';
 export function createScene(data,onSelect,onGuest,onHost,onCreature){
  const stage=document.querySelector('#stage'),labelRoot=document.querySelector('#labels');
  const mobile=()=>innerWidth<=600;
@@ -145,7 +145,7 @@ export function createScene(data,onSelect,onGuest,onHost,onCreature){
  function resize(){renderer.shadowMap.enabled=!mobile();renderer.setPixelRatio(Math.min(devicePixelRatio,mobile()?1.5:2));camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);labels.setSize(innerWidth,innerHeight);if(!selected)overview(false);else focus(selected);}
  const touchOnly=matchMedia('(hover: none)');let peekTimer=0;
  labelRoot.addEventListener('click',e=>{const b=e.target.closest('.island-label,.host-marker,.dog-tag');if(!b||!touchOnly.matches||!document.body.classList.contains('labels-compact')||b.classList.contains('peek')||b.classList.contains('selected'))return;e.preventDefault();e.stopPropagation();labelRoot.querySelectorAll('.peek').forEach(x=>x.classList.remove('peek'));b.classList.add('peek');clearTimeout(peekTimer);peekTimer=setTimeout(()=>b.classList.remove('peek'),3500);dirty=true;},true);
- addEventListener('resize',resize);controls.addEventListener('start',()=>{tween=null;});overview(false);requestAnimationFrame(frame);if(query.has('lineup')){people.actors.slice(0,5).forEach((a,k)=>{a.pause=1e9;a.g.position.set(-5+k*2.5,1.41,11);a.g.rotation.y=.3;});}
+ addEventListener('resize',resize);controls.addEventListener('start',()=>{tween=null;});overview(false);requestAnimationFrame(frame);if(query.has('pos'))document.title=[...islands.entries()].map(([k,I])=>`${k}:${I.p.x.toFixed(1)},${I.p.z.toFixed(1)}`).join(' ');if(query.has('lineup')){people.actors.slice(0,5).forEach((a,k)=>{a.pause=1e9;a.g.position.set(-5+k*2.5,1.41,11);a.g.rotation.y=.3;});}
  // Screenshot helpers: ?cam=x,y,z,tx,ty,tz fixes the camera; ?grid=1 draws a 1-unit grid on every island.
  if(query.get('grid'))for(const I of islands.values()){const g=new T.GridHelper(24,24,P.terra,P.coffee);g.position.set(I.p.x,I.item.height+.5,I.p.z);scene.add(g);}
 

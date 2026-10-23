@@ -1,8 +1,8 @@
 import * as T from 'three';
 import {CSS2DObject} from 'three/addons/CSS2DRenderer.js';
-import {P} from './palette.js?v=20261023135513';
-import {group,box,cyl,ball,mesh,mat} from './primitives.js?v=20261023135513';
-import {shortest} from './world.js?v=20261023135513';
+import {P} from './palette.js?v=20261023135806';
+import {group,box,cyl,ball,mesh,mat} from './primitives.js?v=20261023135806';
+import {shortest} from './world.js?v=20261023135806';
 import {GLTFLoader} from 'three/addons/GLTFLoader.js';
 import {clone as cloneSkinned} from 'three/addons/SkeletonUtils.js';
 // 10/23 熊爸：人太粗糙 → 換成 Kenney Mini Characters（CC0，assets/people/License.txt），內建 idle／walk 動作。
@@ -13,6 +13,8 @@ function loadModel(name){return models[name]??=loader.loadAsync(`assets/people/$
 // 可選第 5、6 個值＝頂點高度範圍（模型原始座標，身高約 0.78），用來分開同色的上衣跟褲子。
 // 把符合的頂點 UV 搬到色票上方沒用到的黑色區，畫成新顏色（保留原本的明暗漸層）。
 const RECOLOR={
+ // 廚房實驗室主廚：白廚師服、深灰褲、黑鞋、咖啡鬍子（頭頂另外加廚師帽，見 creatures.js）
+ chef:[['body-mesh',288,256,'#F4F1EA'],['body-mesh',352,256,'#4B5553'],['body-mesh',352,384,'#3A3A3F'],['head-mesh',352,384,'#7A5038'],['head-mesh',416,384,'#7A5038']],
  // 熊爸（10/23 熊爸 Google 相簿 3/13 自拍）：淺棕挑染側分、白 T，島上照舊穿咖啡色圍裙
  'bear-dad':[['head-mesh',352,384,'#B07E52'],['body-mesh',32,384,'#F3EFE7',.19,1],['body-mesh',32,384,'#4B5553',-1,.19],['body-mesh',288,384,'#6E4E36'],['body-mesh',288,256,'#6E4E36']],
  // 熊老闆（10/23 熊爸給的照片）：深咖啡長髮、淺色牛仔襯衫、膚色偏白
@@ -27,8 +29,10 @@ function recolor(model,rules){let map=null;model.traverse(o=>{if(o.isMesh&&!map)
  model.traverse(o=>{if(!o.isMesh)return;o.geometry=o.geometry.clone();const uv=o.geometry.attributes.uv,pos=o.geometry.attributes.position;
   for(let i=0;i<uv.count;i++){const px=Math.floor(uv.getX(i)*W),py=Math.floor(uv.getY(i)*W);let done=false;rules.forEach(([mesh,bx,by,,y0=-1,y1=9],k)=>{if(done||(mesh&&mesh!==o.name)||px<bx||px>=bx+32||py<by||py>=by+128||pos.getY(i)<y0||pos.getY(i)>=y1)return;done=true;const [dx,dy]=slots[k];uv.setXY(i,(dx+px-bx+.5)/W,(dy+py-by+.5)/W);});}
   uv.needsUpdate=true;o.material=o.material.clone();o.material.map=tex;});}
-export function dress(actor,name){if(!useModels||!name)return;loadModel(name).then(gltf=>{const m=cloneSkinned(gltf.scene);m.scale.setScalar(MODEL_SCALE);m.traverse(o=>{if(o.isMesh){o.castShadow=false;o.frustumCulled=false;}});if(RECOLOR[actor.id])recolor(m,RECOLOR[actor.id]);actor.body.visible=false;actor.g.add(m);
- const mixer=new T.AnimationMixer(m),action=n=>mixer.clipAction(T.AnimationClip.findByName(gltf.animations,n));actor.anim={mixer,idle:action('idle'),walk:action('walk'),w:0};actor.anim.idle.play();actor.anim.walk.play();actor.anim.walk.setEffectiveWeight(0);}).catch(e=>console.warn('人物模型載入失敗，沿用程式人物',e));}
+// 模型的 idle／walk 依是否在走路平滑混合。
+export function animate(a,walking,dt,pace=1){const A=a.anim;if(!A)return false;A.w+=((walking?1:0)-A.w)*Math.min(1,dt*8);A.walk.setEffectiveWeight(A.w);A.idle.setEffectiveWeight(1-A.w);A.walk.timeScale=pace;A.mixer.update(dt);return true;}
+export function dress(actor,name,onLoad){if(!useModels||!name)return;loadModel(name).then(gltf=>{const m=cloneSkinned(gltf.scene);m.scale.setScalar(MODEL_SCALE);m.traverse(o=>{if(o.isMesh){o.castShadow=false;o.frustumCulled=false;}});if(RECOLOR[actor.id])recolor(m,RECOLOR[actor.id]);actor.body.visible=false;actor.g.add(m);
+ const mixer=new T.AnimationMixer(m),action=n=>mixer.clipAction(T.AnimationClip.findByName(gltf.animations,n));actor.anim={mixer,idle:action('idle'),walk:action('walk'),w:0};actor.anim.idle.play();actor.anim.walk.play();actor.anim.walk.setEffectiveWeight(0);onLoad?.(m);}).catch(e=>console.warn('人物模型載入失敗，沿用程式人物',e));}
 const faceGeo=new T.SphereGeometry(.39,8,5),hairGeo=new T.SphereGeometry(.405,8,3,0,Math.PI*2,0,Math.PI*.62),eyeGeo=new T.CircleGeometry(.03,6);
 export function human(parent,style){const g=group(parent),body=group(g),skin='#E4B68E';
  const shadow=new T.Mesh(new T.CircleGeometry(.43,12),new T.MeshBasicMaterial({color:P.coffee,transparent:true,opacity:.18,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.02;g.add(shadow);
@@ -77,7 +81,7 @@ export function createPeople(scene,walkGraph,{onGuest,onHost,smallScreen,ferry})
  if(a.progress>=length-.00001){a.segment++;a.progress=0;}}
  if(a.route.length&&a.segment>=a.route.length-1){a.route=[];if(!a.plan?.length){a.island=a.destination;a.pause=2.5+(a.trip%3);}}
  }
- if(a.anim){const A=a.anim;A.w+=((walking?1:0)-A.w)*Math.min(1,dt*8);A.walk.setEffectiveWeight(A.w);A.idle.setEffectiveWeight(1-A.w);A.walk.timeScale=a.speed*.9;A.mixer.update(dt);}
+ animate(a,walking,dt,a.speed*.9);
  const swing=walking?Math.sin(now*a.speed*6+a.phase)*.45:0;a.legs[0].rotation.x=swing;a.legs[1].rotation.x=-swing;a.arms[0].rotation.x=-swing*.65;a.arms[1].rotation.x=swing*.65;a.body.position.y=walking?Math.abs(Math.sin(now*a.speed*6+a.phase))*.045:0;
  // Keep the ordinary customer circles quiet in the panorama, readable when nearby.
  const distance=camera.position.distanceTo(a.g.position);a.anchor.style.visibility=(!a.guest||distance<230||selectedIsland===a.island)?'visible':'hidden';

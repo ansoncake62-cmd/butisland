@@ -1,8 +1,8 @@
 import * as T from 'three';
-import {P} from './palette.js?v=20261023135513';
-import {group,box,cyl,ball,line} from './primitives.js?v=20261023135513';
-import {coastRadius} from './coast.js?v=20261023135513';
-import {human} from './people.js?v=20261023135513';
+import {P} from './palette.js?v=20261023135806';
+import {group,box,cyl,ball,line} from './primitives.js?v=20261023135806';
+import {coastRadius} from './coast.js?v=20261023135806';
+import {human,dress,animate} from './people.js?v=20261023135806';
 import {CSS2DObject} from 'three/addons/CSS2DRenderer.js';
 // ② 動物、狗、廚師與墨爾本電車。座標都是各島的本地座標（島中心為原點，+z 朝南）。
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -160,7 +160,9 @@ export function createCreatures(scene,islands,track,{onCreature,smallScreen,ferr
  if(kitchen){
  // 廚房實驗室：主廚在中島後面左右走、翻鍋。
  const c=human(kitchen,{shirt:P.butter,apron:P.coffee,pants:'#4B5553',hair:P.coffee,hat:P.butter});c.g.position.set(0,.4,.1);
- add({...c,update:(dt,t)=>{const x=Math.sin(t*.35)*2.1,dx=Math.cos(t*.35);c.g.position.x=x;const walking=Math.abs(dx)>.25;c.g.rotation.y=walking?(dx>0?Math.PI/2:-Math.PI/2):0;const s=walking?Math.sin(t*6)*.4:0;c.legs[0].rotation.x=s;c.legs[1].rotation.x=-s;c.arms[0].rotation.x=walking?-s*.6:-1.2+Math.sin(t*5)*.25;c.arms[1].rotation.x=walking?s*.6:-1.2;}},'chef',.8,1.1);
+ // 10/23 換成跟島上其他人同款的模型（頭頂加白色廚師帽）
+ c.id='chef';dress(c,'character-male-b',m=>{const head=m.getObjectByName('head');if(!head)return;const white=new T.MeshLambertMaterial({color:'#FFFFFF',flatShading:true});const band=new T.Mesh(new T.CylinderGeometry(.2,.2,.1,10),white);band.position.y=.38;head.add(band);const puff=new T.Mesh(new T.SphereGeometry(.24,10,6),white);puff.scale.set(1,.62,1);puff.position.y=.5;head.add(puff);});
+ add({...c,update:(dt,t)=>{const x=Math.sin(t*.35)*2.1,dx=Math.cos(t*.35);c.g.position.x=x;const walking=Math.abs(dx)>.25;c.g.rotation.y=walking?(dx>0?Math.PI/2:-Math.PI/2):0;if(animate(c,walking,dt,.9))return;const s=walking?Math.sin(t*6)*.4:0;c.legs[0].rotation.x=s;c.legs[1].rotation.x=-s;c.arms[0].rotation.x=walking?-s*.6:-1.2+Math.sin(t*5)*.25;c.arms[1].rotation.x=walking?s*.6:-1.2;}},'chef',.8,1.1);
  }
  // 平交道：柵欄兩支（電車接近且沒人要過才放下）＋叉叉標誌
  const trams=[];let bars=null;if(crossing&&track){const c=crossing.point,side=new T.Vector3(crossing.dir.z,0,-crossing.dir.x),tan=track.curve.getTangentAt(crossing.u).setY(0).normalize();bars=[];
