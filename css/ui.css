@@ -67,3 +67,11 @@ body[data-night="1"] .intro-note,body[data-night="1"] .map-footer{color:#fbf4e8}
 .dock.collapsed{width:auto!important}.dock.collapsed .track,.dock.collapsed .saleline-wrap{display:none}.dock.collapsed .clock{width:auto;padding-right:8px}
 @media(max-width:600px){.dock.collapsed{left:auto;right:14px;transform:none}}
 .dog-tag{pointer-events:auto;transform:translateY(-4px);font-size:11px;font-weight:750;padding:3px 9px;border-radius:12px;background:var(--cream);border:2px solid var(--pink);color:var(--coffee);box-shadow:0 2px 8px #394f3e33;white-space:nowrap}
+/* 10/23 拉近時標籤縮成小圓點（scene.js placeLabels 切 body.labels-compact） */
+.labels-compact .island-label:not(:hover):not(.peek):not(.selected){padding:3px;gap:0;min-height:0;opacity:.92}
+.labels-compact .island-label:not(:hover):not(.peek):not(.selected) span{display:none}
+.labels-compact .host-marker:not(:hover):not(.peek){padding:3px;gap:0;min-height:0}
+.labels-compact .host-marker:not(:hover):not(.peek) span{display:none}
+.labels-compact .dog-tag:not(:hover):not(.peek){font-size:0;width:18px;height:18px;padding:0;display:grid;place-items:center}
+.labels-compact .dog-tag:not(:hover):not(.peek)::before{content:'🐾';font-size:9px}
+.intro-note{transition:opacity .3s}.labels-compact .intro-note{opacity:0;pointer-events:none}

@@ -93,7 +93,7 @@ export function createScene(data,onSelect,onGuest,onHost,onCreature){
    if(I.landings.some(l=>Math.abs(Math.atan2(Math.sin(a-l),Math.cos(a-l)))<.42))continue;if(Math.abs(Math.atan2(Math.sin(a),Math.cos(a)))<.35)continue;
    if(trackPts.some(t=>Math.hypot(t.x-w.x,t.z-w.z)<2.4))continue;if(id==='home'&&[[2.2,7.4],[-3.6,6.6],[2.3,1.1],[7,2.8],[15.5,-4.5],[17.5,-4.5],[13.5,-4.5],[-11.5,-4]].some(([dx,dz])=>Math.hypot(dx-x,dz-z)<3.6))continue;const sc=.55+rand()*1.05;if(placed.some(q=>Math.hypot(q[0]-x,q[1]-z)<1.6*(q[2]+sc)))continue;placed.push([x,z,sc]);tree(I.g,x,z,sc,rand()<.35);}}}
  batchScenery(scene);
- let tween=null,selected=null,dirty=true;
+ let tween=null,selected=null,dirty=true,overviewDist=150;
  // ③ 渡輪：開團廣場碼頭 ↔ 熊小幫碼頭，開 8 秒、靠岸 4 秒。
  const tip=id=>docks[id].localToWorld(new T.Vector3(4.4,0,2.2)).setY(-3.72);
  const ferry=group(scene);ball(ferry,1,P.cream,0,.25,0,.75,.32,1.7);box(ferry,1.2,.12,2.4,P.wood,0,.5,0);cyl(ferry,.05,3,P.darkWood,0,2,0,6);box(ferry,.9,.6,.8,P.wall,0,.85,-.6);
@@ -124,7 +124,7 @@ export function createScene(data,onSelect,onGuest,onHost,onCreature){
  const xs=[...islands.values()].map(I=>I.p.x),zs=[...islands.values()].map(I=>I.p.z);const target=new T.Vector3((Math.min(...xs)+Math.max(...xs))/2,mobile()?9:0,(Math.min(...zs)+Math.max(...zs))/2),direction=new T.Vector3(mobile()?1.15:.28,mobile()?1.15:.42,mobile()?.8:1).normalize();
  const right=new T.Vector3(direction.z,0,-direction.x).normalize(),up=new T.Vector3().crossVectors(direction,right).normalize();
  let halfW=0,halfH=0;for(const I of islands.values())for(let k=0;k<8;k++){const a=k*Math.PI/4,v=new T.Vector3(I.p.x+Math.sin(a)*I.r*1.4,0,I.p.z+Math.cos(a)*I.r*1.4).sub(target);halfW=Math.max(halfW,Math.abs(v.dot(right)));halfH=Math.max(halfH,Math.abs(v.dot(up)));}
- const tan=Math.tan(T.MathUtils.degToRad(camera.fov/2)),aspect=innerWidth/innerHeight,dist=Math.max(halfW/(tan*aspect)*1.2,halfH/tan*1.5,120);const pos=target.clone().add(direction.multiplyScalar(dist));scene.fog.near=Math.max(260,dist*1.1);scene.fog.far=Math.max(700,dist*3);
+ const tan=Math.tan(T.MathUtils.degToRad(camera.fov/2)),aspect=innerWidth/innerHeight,dist=Math.max(halfW/(tan*aspect)*1.2,halfH/tan*1.5,120);overviewDist=dist;const pos=target.clone().add(direction.multiplyScalar(dist));scene.fog.near=Math.max(260,dist*1.1);scene.fog.far=Math.max(700,dist*3);
 
  if(animate)move(target,pos);else{controls.target.copy(target);camera.position.copy(pos);controls.update();}dirty=true;}
  function focus(id){const I=islands.get(id);if(!I)return;selected=id;scene.fog.near=210;scene.fog.far=420;for(const v of islands.values())v.ring.visible=v===I;labelItems.forEach(l=>l.button.classList.toggle('selected',l.id===id));
@@ -133,7 +133,8 @@ export function createScene(data,onSelect,onGuest,onHost,onCreature){
  function focusCreature(id){const c=creatures.find(id);if(!c)return;selected=null;for(const v of islands.values())v.ring.visible=false;const target=c.g.getWorldPosition(new T.Vector3());const offset=new T.Vector3(mobile()?8:10,mobile()?15:14,mobile()?19:18);move(target,target.clone().add(offset));}
  const pointer=new T.Vector2(),raycaster=new T.Raycaster();let down=null;
  renderer.domElement.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};tween=null;});renderer.domElement.addEventListener('pointerup',e=>{if(!down||Math.hypot(down.x-e.clientX,down.y-e.clientY)>7)return;pointer.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);raycaster.setFromCamera(pointer,camera);const hit=raycaster.intersectObjects([...people.hits.filter(h=>h.parent.visible),...creatures.hits,...clickables],false)[0];if(hit){if(hit.object.userData.npcId)people.activate(hit.object.userData.npcId);else if(hit.object.userData.creatureId)creatures.activate(hit.object.userData.creatureId);else onSelect(hit.object.userData.islandId);}down=null;});
- function placeLabels(){const occupied=[];for(const obj of labelItems){const world=obj.label.getWorldPosition(new T.Vector3()).project(camera);const b=obj.button;const visible=world.z>-1&&world.z<1&&Math.abs(world.x)<1.15&&Math.abs(world.y)<1.15&&(!selected||selected===obj.id);b.style.visibility=visible?'visible':'hidden';if(!visible)continue;const w=b.offsetWidth,h=b.offsetHeight;let x=(world.x+1)*innerWidth/2,y=(-world.y+1)*innerHeight/2;let dx=T.MathUtils.clamp(x,8+w/2,innerWidth-8-w/2)-x,dy=0;
+ // 10/23 熊爸選 1：拉近到全景距離的 65% 以內，標籤縮成號碼／頭像小圓點；滑鼠移上去或手機點一下才展開名字（再點一下才進去）。
+ function placeLabels(){document.body.classList.toggle('labels-compact',camera.position.distanceTo(controls.target)<overviewDist*.65);const occupied=[];for(const obj of labelItems){const world=obj.label.getWorldPosition(new T.Vector3()).project(camera);const b=obj.button;const visible=world.z>-1&&world.z<1&&Math.abs(world.x)<1.15&&Math.abs(world.y)<1.15&&(!selected||selected===obj.id);b.style.visibility=visible?'visible':'hidden';if(!visible)continue;const w=b.offsetWidth,h=b.offsetHeight;let x=(world.x+1)*innerWidth/2,y=(-world.y+1)*innerHeight/2;let dx=T.MathUtils.clamp(x,8+w/2,innerWidth-8-w/2)-x,dy=0;
  const collisions=(cx,cy)=>occupied.some(o=>Math.abs(cx-o.x)<(w+o.w)/2+5&&Math.abs(cy-o.y)<(h+o.h)/2+5);
  for(let j=0;j<12&&collisions(x+dx,y+dy);j++)dy=(j%2?1:-1)*Math.ceil((j+1)/2)*(h+6);
  dy=T.MathUtils.clamp(y+dy,95,innerHeight-95)-y;occupied.push({x:x+dx,y:y+dy,w,h});b.style.marginLeft=`${dx}px`;b.style.marginTop=`${dy}px`;}people.layout(camera,occupied);}
@@ -142,6 +143,8 @@ export function createScene(data,onSelect,onGuest,onHost,onCreature){
  if(tween){dirty=true;let t=tween.duration?Math.min(1,(now-tween.start)/tween.duration):1;t=t*t*(3-2*t);camera.position.lerpVectors(tween.fromPosition,tween.toPosition,t);controls.target.lerpVectors(tween.fromTarget,tween.toTarget,t);if(t>=1)tween=null;}
  const changed=controls.update();if(changed||tween||dirty||people.actors.length){renderer.render(scene,camera);labels.render(scene,camera);placeLabels();dirty=false;}}
  function resize(){renderer.shadowMap.enabled=!mobile();renderer.setPixelRatio(Math.min(devicePixelRatio,mobile()?1.5:2));camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);labels.setSize(innerWidth,innerHeight);if(!selected)overview(false);else focus(selected);}
+ const touchOnly=matchMedia('(hover: none)');let peekTimer=0;
+ labelRoot.addEventListener('click',e=>{const b=e.target.closest('.island-label,.host-marker,.dog-tag');if(!b||!touchOnly.matches||!document.body.classList.contains('labels-compact')||b.classList.contains('peek')||b.classList.contains('selected'))return;e.preventDefault();e.stopPropagation();labelRoot.querySelectorAll('.peek').forEach(x=>x.classList.remove('peek'));b.classList.add('peek');clearTimeout(peekTimer);peekTimer=setTimeout(()=>b.classList.remove('peek'),3500);dirty=true;},true);
  addEventListener('resize',resize);controls.addEventListener('start',()=>{tween=null;});overview(false);requestAnimationFrame(frame);
  // Screenshot helpers: ?cam=x,y,z,tx,ty,tz fixes the camera; ?grid=1 draws a 1-unit grid on every island.
  if(query.get('grid'))for(const I of islands.values()){const g=new T.GridHelper(24,24,P.terra,P.coffee);g.position.set(I.p.x,I.item.height+.5,I.p.z);scene.add(g);}
