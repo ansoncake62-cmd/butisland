@@ -1,0 +1,92 @@
+{
+  "guest-1": {
+    "status": "placeholder",
+    "heading": "客人的分享",
+    "customerName": "TODO",
+    "thanks": "TODO",
+    "experience": "TODO",
+    "product": "TODO",
+    "source": "TODO",
+    "sourceLink": "customer-1-source",
+    "actions": [
+      "customer-1-source",
+      "order-form",
+      "line-group"
+    ]
+  },
+  "guest-2": {
+    "status": "placeholder",
+    "heading": "客人的分享",
+    "customerName": "TODO",
+    "thanks": "TODO",
+    "experience": "TODO",
+    "product": "TODO",
+    "source": "TODO",
+    "sourceLink": "customer-2-source",
+    "actions": [
+      "customer-2-source",
+      "order-form",
+      "line-group"
+    ]
+  },
+  "guest-3": {
+    "status": "placeholder",
+    "heading": "客人的分享",
+    "customerName": "TODO",
+    "thanks": "TODO",
+    "experience": "TODO",
+    "product": "TODO",
+    "source": "TODO",
+    "sourceLink": "customer-3-source",
+    "actions": [
+      "customer-3-source",
+      "order-form",
+      "line-group"
+    ]
+  },
+  "guest-4": {
+    "status": "placeholder",
+    "heading": "客人的分享",
+    "customerName": "TODO",
+    "thanks": "TODO",
+    "experience": "TODO",
+    "product": "TODO",
+    "source": "TODO",
+    "sourceLink": "customer-4-source",
+    "actions": [
+      "customer-4-source",
+      "order-form",
+      "line-group"
+    ]
+  },
+  "guest-5": {
+    "status": "placeholder",
+    "heading": "客人的分享",
+    "customerName": "TODO",
+    "thanks": "TODO",
+    "experience": "TODO",
+    "product": "TODO",
+    "source": "TODO",
+    "sourceLink": "customer-5-source",
+    "actions": [
+      "customer-5-source",
+      "order-form",
+      "line-group"
+    ]
+  },
+  "guest-6": {
+    "status": "placeholder",
+    "heading": "客人的分享",
+    "customerName": "TODO",
+    "thanks": "TODO",
+    "experience": "TODO",
+    "product": "TODO",
+    "source": "TODO",
+    "sourceLink": "customer-6-source",
+    "actions": [
+      "customer-6-source",
+      "order-form",
+      "line-group"
+    ]
+  }
+}

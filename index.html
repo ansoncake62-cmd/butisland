@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FBF4E8"><title>But島｜熊爸的廚房小島</title>
+<meta name="description" content="從墨爾本後院，到台灣的開團廣場。來熊爸的廚房小島逛逛。">
+<link rel="icon" type="image/svg+xml" href="assets/brand/01_狗頭.svg"><link rel="stylesheet" href="css/ui.css">
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.js","three/addons/":"./vendor/three/"}}</script>
+</head>
+<body>
+<main id="map" aria-label="But島互動地圖"><div id="stage" aria-label="六座島的 3D 地圖，拖曳轉視角，點島探索"></div><div id="labels"></div></main>
+<header class="brand"><button id="brand-home" class="brand-mark" aria-label="But島，回到全景"><img src="assets/brand/02_ButSoCool字標.svg" alt="ButSoCool"><span>But島<small>熊爸的廚房小島</small></span></button></header>
+<nav class="map-tools" aria-label="地圖操作"><button id="list-toggle" aria-expanded="false" aria-controls="list-panel"><span>☰</span> 清單</button><button id="overview" aria-label="回到全景"><span>⌂</span> 全景</button><button id="zoom-in" aria-label="放大地圖">＋</button><button id="zoom-out" aria-label="縮小地圖">−</button></nav>
+<section class="intro-note"><span class="eyebrow">A LITTLE AUSTRALIA. A LITTLE TAIWAN.</span><h1>好東西，<br>從這裡出發。</h1><p>六座小島，慢慢逛。<br>點一座島，看看熊爸在忙什麼。</p></section>
+<div class="map-caption" aria-hidden="true"><span>澳洲選品</span><i></i><span>台灣相聚</span></div>
+<aside id="card" class="island-card" aria-labelledby="card-title" hidden>
+<button id="card-handle" aria-label="展開或收起說明卡" aria-expanded="false"><span></span></button><button id="close-card" class="close" aria-label="關閉說明卡">×</button>
+<div class="card-content"><p class="eyebrow" id="card-region"></p><div class="card-heading"><span id="card-number"></span><h2 id="card-title"></h2></div><p id="card-subtitle"></p><div class="placeholder-note">內容準備中・先逛逛小島</div><div id="card-items"></div><section id="card-post"></section><div id="card-actions" class="actions"></div><p class="source-note">第 1 階段佔位｜商品與文章內容待熊爸提供</p></div>
+</aside>
+<section class="dock collapsed" id="dock" aria-label="時間">
+<div class="saleline-wrap"><span>開團進度</span><div id="saleline" role="group" aria-label="開團時間軸"></div></div>
+<div class="clock"><button id="hour-play" aria-label="播放一天">▶</button><div class="track"><input id="hour" type="range" min="0" max="23.99" step="0.05" value="9.5" aria-label="一天中的時間"><div id="periods"></div><span class="ends"><i>00:00</i><i>24:00</i></span></div><output id="hour-label">09:30・上午</output><button id="dock-toggle" aria-expanded="false" aria-label="展開時間軸">⇆</button></div>
+</section>
+<footer class="map-footer"><span class="stage-note"><i></i> 第 1 階段・內容待補</span><p id="map-hint">拖曳轉視角 · 滾輪縮放 · 點島探索</p><button id="reset-hint" aria-label="顯示操作說明">?</button></footer>
+<aside id="list-panel" class="list-panel" hidden aria-label="島上清單"><div class="list-head"><input id="list-search" type="search" placeholder="搜尋小島、商品、人物…" aria-label="搜尋"><button id="list-close" aria-label="關閉清單">×</button></div><div id="list-results"></div></aside>
+<section id="entry" class="entry" aria-label="But島入口">
+<div class="entry-sea" aria-hidden="true"></div>
+<div class="entry-body"><img class="entry-logo" src="assets/brand/03_完整橫式LOGO.png" alt="ButSoCool">
+<h1>But島</h1><p class="entry-sub">熊爸的廚房小島，點進來逛逛</p>
+<div class="entry-dogs"><button class="entry-dog peanut" aria-label="屁那"><svg viewBox="0 0 120 90" aria-hidden="true"><g class="tail"><circle cx="18" cy="38" r="9" fill="#F4DDB3"/></g><ellipse cx="55" cy="50" rx="34" ry="21" fill="#F4DDB3"/><circle cx="40" cy="36" r="9" fill="#F4DDB3"/><circle cx="55" cy="33" r="10" fill="#F4DDB3"/><circle cx="70" cy="36" r="9" fill="#F4DDB3"/><rect x="30" y="62" width="9" height="20" rx="4" fill="#F4DDB3"/><rect x="70" y="62" width="9" height="20" rx="4" fill="#F4DDB3"/><circle cx="92" cy="34" r="17" fill="#F4DDB3"/><circle cx="92" cy="17" r="9" fill="#F4DDB3"/><ellipse cx="80" cy="38" rx="6" ry="11" fill="#E3B07A"/><circle cx="96" cy="31" r="2.6" fill="#332C29"/><circle cx="108" cy="38" r="4" fill="#332C29"/><path d="M78 50h20" stroke="#EBB4C4" stroke-width="5" stroke-linecap="round"/></svg><span>屁那</span></button>
+<button class="entry-dog butter" aria-label="霸特"><svg viewBox="0 0 120 90" aria-hidden="true"><g class="tail"><circle cx="14" cy="58" r="9" fill="#FFFDF5" stroke="#E5DCCB"/></g><ellipse cx="55" cy="64" rx="40" ry="17" fill="#FFFDF5" stroke="#E5DCCB"/><circle cx="96" cy="58" r="17" fill="#FFFDF5" stroke="#E5DCCB"/><ellipse cx="84" cy="66" rx="6" ry="14" fill="#FFFDF5" stroke="#E5DCCB"/><path d="M95 55h6M103 55h5" stroke="#332C29" stroke-width="2" stroke-linecap="round"/><circle cx="112" cy="62" r="4" fill="#7A4B3A"/><text x="60" y="38" font-size="14" fill="#917A67">z z</text></svg><span>霸特</span></button></div>
+<button id="entry-go" class="entry-go" disabled>上島中… 0%</button>
+<button id="entry-list" class="entry-list">直接看清單</button>
+<div class="paws" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+<p class="entry-links"><a id="entry-line">加入 LINE 社群</a><span>・</span><a id="entry-help">熊小幫客服</a></p></div>
+</section>
+<div id="loading" role="status"><img src="assets/brand/01_狗頭.svg" alt=""><p>But島 正在組合中…</p><span>把好東西，放在一起。</span></div>
+<div id="status" role="status" aria-live="polite"></div>
+<noscript><p class="noscript">請開啟 JavaScript 來逛小島。</p></noscript>
+<script type="module" src="js/app.js"></script>
+</body></html>

@@ -1,0 +1,30 @@
+{
+  "meta": { "title": "But島", "subtitle": "TODO：一句話副標（熊爸定）", "updatedAt": "2026-10-22" },
+  "islands": [
+    {
+      "id": "beef", "name": "牛肉", "axial": [0, 0], "color": "#B5482E", "model": "steak",
+      "summary": "TODO（熊爸給）",
+      "items": [ { "id": "beef-1", "name": "TODO 品項名稱", "facts": ["TODO"], "source": "TODO" } ],
+      "posts": ["TODO-post-id"], "actions": ["line-group", "order-form"]
+    },
+    {
+      "id": "bamix", "name": "BAMIX", "axial": [1, 0], "color": "#5A7D9A", "model": "blender",
+      "summary": "TODO（熊爸給）",
+      "items": [ { "id": "bamix-1", "name": "TODO", "facts": ["TODO"], "source": "TODO" } ],
+      "posts": [], "actions": ["line-group"]
+    },
+    {
+      "id": "knife", "name": "刀具", "axial": [0, 1], "color": "#7A6A58", "model": "knife-block",
+      "summary": "TODO（熊爸給）",
+      "items": [ { "id": "knife-1", "name": "TODO", "facts": ["TODO"], "source": "TODO" } ],
+      "posts": [], "actions": ["line-group"]
+    }
+  ],
+  "flows": [
+    { "id": "steak", "dish": "煎牛排", "path": ["beef", "knife", "bamix"], "text": "TODO 一句話", "walker": "chef" }
+  ],
+  "dayCycle": [
+    { "from": "07:00", "to": "09:00", "label": "早餐", "lights": ["bamix"], "dish": "TODO" },
+    { "from": "18:00", "to": "20:00", "label": "晚餐", "lights": ["beef", "knife"], "dish": "煎牛排" }
+  ]
+}

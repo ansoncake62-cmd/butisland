@@ -1,0 +1,54 @@
+{
+  "line-group": {
+    "label": "加入 LINE 社群",
+    "url": "TODO"
+  },
+  "line-help": {
+    "label": "LINE 問熊小幫",
+    "url": "TODO"
+  },
+  "order-form": {
+    "label": "看開團／下單",
+    "url": "TODO"
+  },
+  "fb-post": {
+    "label": "去 FB 看全文",
+    "url": "TODO"
+  },
+  "customer-1-source": {
+    "label": "查看分享原文",
+    "url": "TODO"
+  },
+  "customer-2-source": {
+    "label": "查看分享原文",
+    "url": "TODO"
+  },
+  "customer-3-source": {
+    "label": "查看分享原文",
+    "url": "TODO"
+  },
+  "customer-4-source": {
+    "label": "查看分享原文",
+    "url": "TODO"
+  },
+  "customer-5-source": {
+    "label": "查看分享原文",
+    "url": "TODO"
+  },
+  "customer-6-source": {
+    "label": "查看分享原文",
+    "url": "TODO"
+  },
+  "ac-site": {
+    "label": "AC 網站",
+    "url": "TODO"
+  },
+  "ac-social": {
+    "label": "熊爸的相關連結",
+    "url": "TODO"
+  },
+  "but-site": {
+    "label": "ButSoCool 網站",
+    "url": "TODO"
+  }
+}

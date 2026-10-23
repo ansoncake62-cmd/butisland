@@ -1,0 +1,352 @@
+{
+  "meta": {
+    "title": "But島",
+    "subtitle": "熊爸的廚房小島，點進來逛逛",
+    "updatedAt": "2026-10-23",
+    "stage": "第①段・場景與鏡頭"
+  },
+  "islands": [
+    {
+      "id": "home",
+      "number": "01",
+      "name": "熊爸家",
+      "subtitle": "認識熊爸",
+      "axial": [
+        0,
+        0
+      ],
+      "height": 0,
+      "region": "澳洲・墨爾本",
+      "color": "#A9C25A",
+      "model": "home",
+      "summary": "TODO",
+      "items": [
+        {
+          "id": "home-1",
+          "name": "ButSoCool 品牌故事",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        },
+        {
+          "id": "home-2",
+          "name": "在澳洲選品的理由",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        }
+      ],
+      "posts": [
+        "sample-post"
+      ],
+      "actions": [
+        "line-group"
+      ],
+      "status": "placeholder",
+      "sources": [
+        "WORKFLOW.md §1.5",
+        "DESIGN.md §3"
+      ]
+    },
+    {
+      "id": "market",
+      "number": "02",
+      "name": "開團廣場",
+      "subtitle": "正在開的團",
+      "axial": [
+        1,
+        0
+      ],
+      "height": 0,
+      "region": "台灣・取貨與開團",
+      "color": "#A0BA55",
+      "model": "market",
+      "summary": "TODO",
+      "items": [
+        {
+          "id": "market-1",
+          "name": "開團清單",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        },
+        {
+          "id": "market-2",
+          "name": "截止與到貨時間",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        },
+        {
+          "id": "market-3",
+          "name": "上一團開箱",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        }
+      ],
+      "posts": [
+        "sample-post"
+      ],
+      "actions": [
+        "order-form",
+        "line-group"
+      ],
+      "status": "placeholder",
+      "sources": [
+        "WORKFLOW.md §1.5",
+        "DESIGN.md §3"
+      ]
+    },
+    {
+      "id": "farm",
+      "number": "03",
+      "name": "熟成牧場",
+      "subtitle": "肉品與產地",
+      "axial": [
+        -1,
+        0
+      ],
+      "height": 0.3,
+      "region": "澳洲・牧場",
+      "color": "#8FA84A",
+      "model": "farm",
+      "summary": "TODO",
+      "items": [
+        {
+          "id": "farm-1",
+          "name": "肉品與供應商",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        },
+        {
+          "id": "farm-2",
+          "name": "濕式熟成",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        },
+        {
+          "id": "farm-3",
+          "name": "部位怎麼挑",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        }
+      ],
+      "posts": [
+        "sample-post"
+      ],
+      "actions": [
+        "order-form",
+        "line-group"
+      ],
+      "status": "placeholder",
+      "sources": [
+        "WORKFLOW.md §1.5",
+        "DESIGN.md §3"
+      ]
+    },
+    {
+      "id": "kitchen",
+      "number": "04",
+      "name": "廚房實驗室",
+      "subtitle": "器具怎麼用",
+      "axial": [-0.806, 1],
+      "height": 0,
+      "region": "一道菜的起點",
+      "color": "#98B350",
+      "model": "kitchen",
+      "summary": "TODO",
+      "items": [
+        {
+          "id": "kitchen-1",
+          "name": "BAMIX",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        },
+        {
+          "id": "kitchen-2",
+          "name": "刀具",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        },
+        {
+          "id": "kitchen-3",
+          "name": "料理示範與食譜",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        }
+      ],
+      "posts": [
+        "sample-post"
+      ],
+      "actions": [
+        "order-form",
+        "fb-post"
+      ],
+      "status": "placeholder",
+      "sources": [
+        "WORKFLOW.md §1.5",
+        "DESIGN.md §3"
+      ]
+    },
+    {
+      "id": "library",
+      "number": "05",
+      "name": "知識圖書館",
+      "subtitle": "熊爸的專業分享",
+      "axial": [0.194, -1],
+      "height": 1,
+      "region": "把經驗留下來",
+      "color": "#A9C25A",
+      "model": "library",
+      "summary": "TODO",
+      "items": [
+        {
+          "id": "library-1",
+          "name": "肉品知識",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        },
+        {
+          "id": "library-2",
+          "name": "器具與料理",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        },
+        {
+          "id": "library-3",
+          "name": "選品筆記",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        }
+      ],
+      "posts": [
+        "sample-post"
+      ],
+      "actions": [
+        "fb-post",
+        "line-group"
+      ],
+      "status": "placeholder",
+      "sources": [
+        "WORKFLOW.md §1.5",
+        "DESIGN.md §3"
+      ]
+    },
+    {
+      "id": "help",
+      "number": "06",
+      "name": "熊小幫客服島",
+      "subtitle": "常見問題・LINE 問我們",
+      "axial": [1.578, -1.415],
+      "height": -0.5,
+      "region": "台灣側外海",
+      "color": "#A9C25A",
+      "model": "help",
+      "summary": "TODO",
+      "items": [
+        {
+          "id": "help-1",
+          "name": "下單與付款",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        },
+        {
+          "id": "help-2",
+          "name": "運費與到貨",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        },
+        {
+          "id": "help-3",
+          "name": "解凍保存與售後",
+          "facts": [
+            "TODO"
+          ],
+          "source": "TODO",
+          "status": "placeholder"
+        }
+      ],
+      "posts": [
+        "sample-post"
+      ],
+      "actions": [
+        "line-help"
+      ],
+      "status": "placeholder",
+      "sources": [
+        "WORKFLOW.md §1.5",
+        "DESIGN.md §3"
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "id": "story",
+      "dish": "從澳洲選品到台灣開團",
+      "path": [
+        "home",
+        "library",
+        "farm",
+        "market"
+      ],
+      "text": "串聯示意・內容待補",
+      "walker": "chef"
+    },
+    {
+      "id": "cook",
+      "dish": "買了肉，用什麼煮",
+      "path": [
+        "farm",
+        "kitchen",
+        "market"
+      ],
+      "text": "串聯示意・內容待補",
+      "walker": "chef"
+    }
+  ],
+  "dayCycle": []
+}

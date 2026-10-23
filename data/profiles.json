@@ -1,0 +1,24 @@
+{
+  "bear-dad": {
+    "name": "熊爸",
+    "logo": "assets/brand/AC-logo-black.png",
+    "intro": "TODO",
+    "story": "TODO",
+    "actions": [
+      "ac-site",
+      "ac-social",
+      "line-group"
+    ]
+  },
+  "bear-boss": {
+    "name": "熊老闆",
+    "logo": "assets/brand/01_狗頭.svg",
+    "intro": "TODO",
+    "story": "TODO",
+    "actions": [
+      "but-site",
+      "line-group",
+      "order-form"
+    ]
+  }
+}
