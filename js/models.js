@@ -1,7 +1,7 @@
 import * as T from 'three';
-import {P} from './palette.js';
-import {terrain} from './coast.js';
-import {group,box,cyl,ball,line,roof,spire,path,tree,plant,bench,windowPane,fence,umbrella,board} from './primitives.js';
+import {P} from './palette.js?v=20261023135513';
+import {terrain} from './coast.js?v=20261023135513';
+import {group,box,cyl,ball,line,roof,spire,path,tree,plant,bench,windowPane,fence,umbrella,board} from './primitives.js?v=20261023135513';
 export function islandBase(parent,r,height,color,seed=0,options={}){return terrain(parent,r,color,seed,options);}
 
 // 10/23 熊爸選 B：熊爸家改成參考影片那種小城堡——石牆主館＋魚鱗瓦階梯山牆、兩座圓塔尖頂、一座方塔城垛。

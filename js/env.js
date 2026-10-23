@@ -1,6 +1,6 @@
 import * as T from 'three';
-import {P} from './palette.js';
-import {mat} from './primitives.js';
+import {P} from './palette.js?v=20261023135513';
+import {mat} from './primitives.js?v=20261023135513';
 // ③ 24 小時光線（DESIGN.md §1.2）：關鍵時刻的天色、光色，中間線性內插。
 const KEYS=[
  // hour, sky/fog, hemi sky, hemi ground, hemi, sun color, sun, night(0–1)
