@@ -1,8 +1,9 @@
 import * as T from 'three';
-import {P} from './palette.js?v=20261024115003';
-import {group,box,cyl,ball,line} from './primitives.js?v=20261024115003';
-import {coastRadius} from './coast.js?v=20261024115003';
-import {human,dress,animate} from './people.js?v=20261024115003';
+import {P} from './palette.js?v=20261024194217';
+import {createDog} from './dogs.js?v=20261024194217';
+import {group,box,cyl,ball,line} from './primitives.js?v=20261024194217';
+import {coastRadius} from './coast.js?v=20261024194217';
+import {human,dress,animate} from './people.js?v=20261024194217';
 import {CSS2DObject} from 'three/addons/CSS2DRenderer.js';
 // ② 動物、狗、廚師與墨爾本電車。座標都是各島的本地座標（島中心為原點，+z 朝南）。
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -21,19 +22,8 @@ export const CREATURES={
 // ---------- 模型 ----------
 // 10/24 熊爸：狗看起來偏綠——背光面只吃到偏黃的環境光，白毛暗下來變橄欖色。毛色材質加一點自發光把背光面撐亮；屁那的嘴巴、耳朵照本尊改焦糖杏色。
 const PEANUT={fur:'#F6DDBC',ear:'#D9975E',muzzle:'#E3A56E',nose:P.ink},BUTTER={fur:'#FFFAF5',ear:'#F4E6DA',nose:P.nose,earLong:true,sleepy:true};
-function dog(parent,{fur,ear,nose,earLong,sleepy,muzzle}){
- const g=group(parent),body=group(g);ball(body,.42,fur,0,.62,0,.85,.8,1.3);
- for(let i=0;i<7;i++)ball(body,.17,fur,Math.sin(i*2.1)*.22,.9+(i%2)*.04,-.35+i*.12);
- const legs=[];for(const [x,z] of [[-.2,.32],[.2,.32],[-.2,-.32],[.2,-.32]]){const l=group(body,x,.45,z);cyl(l,.09,.42,fur,0,-.2,0,6);ball(l,.11,fur,0,-.4,0);legs.push(l);}
- const head=group(body,0,1.02,.55);ball(head,.3,fur,0,0,0);ball(head,.15,muzzle||fur,0,-.07,.27,1,.85,1.1);ball(head,.065,nose,0,-.03,.42);
- for(const x of [-.11,.11])sleepy?box(head,.08,.025,.02,P.ink,x,.06,.28):ball(head,.04,P.ink,x,.06,.27);
- for(const x of [-.28,.28])ball(head,.15,ear,x,earLong?-.2:-.08,-.02,.6,earLong?1.8:1.3,.9);
- ball(head,.19,fur,0,.27,-.03);const collar=cyl(body,.25,.08,P.pink,0,.86,.42,10);collar.rotation.x=1;
- const tongue=box(head,.09,.02,.15,P.pink,0,-.17,.36);tongue.visible=false;
- const tail=group(body,0,.86,-.58);ball(tail,.13,fur,0,.06,-.04);
- const lift=new Map();body.traverse(o=>{if(!o.isMesh||o===tongue)return;const c=o.material.color;if(c.r+c.g+c.b<1.2)return;if(!lift.has(o.material)){const m=o.material.clone();m.emissive.copy(c).multiplyScalar(.28);lift.set(o.material,m);}o.material=lift.get(o.material);});
- return {g,body,head,legs,tail,tongue};
-}
+function dog(parent,options){return createDog(parent,options);}
+
 function cow(parent,color){const g=group(parent),body=group(g);box(body,.8,.7,1.4,color,0,.95,0);box(body,.82,.3,.5,P.cream,0,1.05,-.2);
  const head=group(body,0,1.15,.8);box(head,.5,.5,.55,color,0,0,0);box(head,.42,.28,.2,P.pink,0,-.15,.3);for(const x of [-.2,.2])box(head,.05,.05,.02,P.ink,x,.08,.28);for(const x of [-.3,.3])box(head,.18,.08,.08,P.cream,x,.25,-.05);
  const legs=[];for(const [x,z] of [[-.27,.5],[.27,.5],[-.27,-.5],[.27,-.5]]){const l=group(body,x,.6,z);box(l,.18,.6,.18,color,0,-.3,0);legs.push(l);}return {g,body,head,legs};}
@@ -83,7 +73,7 @@ function dogActor(model,{spot,loop,speed}){
  else if(s.mode==='run'){a.loopIndex=(a.loopIndex+1)%loop.length;moving=true;}
  const lying=!moving&&s.mode!=='run'&&s.mode!=='stand',k=t*(s.mode==='run'?13:6)+a.phase;
  a.legs.forEach((l,i)=>l.rotation.x=lying?(i<2?-1.35:1.35):moving?Math.sin(k+(i%2?Math.PI:0)+(i>1?Math.PI/2:0))*.6:0);
- a.body.position.y=lying?-.32:moving?Math.abs(Math.sin(k))*.06:0;
+ a.body.position.y=lying?(a.restOffset??-.32):moving?Math.abs(Math.sin(k))*.06:0;
  const breathe=lying?1+Math.sin(t*(s.mode==='pant'?7:1.6))*.035:1;a.body.scale.set(1,breathe,1);
  a.head.rotation.x=lying&&s.mode==='sleep'?.35:0;a.tongue.visible=s.mode==='pant'&&lying;a.tail.rotation.y=Math.sin(t*(moving||s.wag?16:3))*(s.mode==='sleep'?.05:s.wag?.8:.5);};
  return a;
@@ -133,7 +123,7 @@ function tram(parent){const g=group(parent),body=group(g),green=P.tram;
 export function createCreatures(scene,islands,track,{onCreature,smallScreen,ferry,crossing,peopleNear}){
  const actors=[],hits=[];const at=id=>islands.get(id)?.g;
  function add(actor,id,r=.7,y=.5){actor.id=id;actor.hit=finish(actor.g,id,r,y);hits.push(actor.hit);actors.push(actor);
-  if(id==='peanut'||id==='butter'){const el=document.createElement('button');el.type='button';el.className='dog-tag';el.textContent=id==='peanut'?'屁那':'霸特';el.onclick=e=>{e.stopPropagation();onCreature(id);};const wrap=document.createElement('div');wrap.className='npc-anchor';wrap.append(el);const tag=new CSS2DObject(wrap);tag.position.set(0,1.9,0);actor.g.add(tag);actor.tag=tag;}
+  if(id==='peanut'||id==='butter'){const el=document.createElement('button');el.type='button';el.className='dog-tag';el.textContent=id==='peanut'?'屁那':'霸特';el.onclick=e=>{e.stopPropagation();onCreature(id);};const wrap=document.createElement('div');wrap.className='npc-anchor';wrap.append(el);const tag=new CSS2DObject(wrap);tag.position.set(0,actor.tagHeight??1.9,0);actor.g.add(tag);actor.tag=tag;}
   return actor;}
  const home=at('home'),farm=at('farm'),kitchen=at('kitchen');
  if(home){

@@ -1,15 +1,15 @@
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/OrbitControls.js';
 import {CSS2DRenderer,CSS2DObject} from 'three/addons/CSS2DRenderer.js';
-import {P} from './palette.js?v=20261024115003';
-import {R,axial,BRIDGES} from './world.js?v=20261024115003';
-import {group,box,cyl,ball,line,path,tree,umbrella,mat,roof} from './primitives.js?v=20261024115003';
-import {islandBase,builders} from './models.js?v=20261024115003';
-import {coastRadius,coastline,coastBand,surface,bulges} from './coast.js?v=20261024115003';
-import {createPeople} from './people.js?v=20261024115003';
-import {buildTrack,createCreatures} from './creatures.js?v=20261024115003';
-import {batchScenery} from './static-scene.js?v=20261024115003';
-import {createEnvironment} from './env.js?v=20261024115003';
+import {P} from './palette.js?v=20261024194217';
+import {R,axial,BRIDGES} from './world.js?v=20261024194217';
+import {group,box,cyl,ball,line,path,tree,umbrella,mat,roof} from './primitives.js?v=20261024194217';
+import {islandBase,builders} from './models.js?v=20261024194217';
+import {coastRadius,coastline,coastBand,surface,bulges} from './coast.js?v=20261024194217';
+import {createPeople} from './people.js?v=20261024194217';
+import {buildTrack,createCreatures} from './creatures.js?v=20261024194217';
+import {batchScenery} from './static-scene.js?v=20261024194217';
+import {createEnvironment} from './env.js?v=20261024194217';
 export function createScene(data,onSelect,onGuest,onHost,onCreature){
  const stage=document.querySelector('#stage'),labelRoot=document.querySelector('#labels');
  const mobile=()=>innerWidth<=600;

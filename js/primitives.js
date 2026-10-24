@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {P} from './palette.js?v=20261024115003';
+import {P} from './palette.js?v=20261024194217';
 const materials=new Map(), geometries=new Map();
 export function mat(color,extra={}){const key=color+JSON.stringify(extra);if(!materials.has(key))materials.set(key,new T.MeshStandardMaterial({color,roughness:.88,flatShading:true,...extra}));return materials.get(key);}
 export function group(parent,x=0,y=0,z=0){const g=new T.Group();g.position.set(x,y,z);parent.add(g);return g;}

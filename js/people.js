@@ -1,8 +1,8 @@
 import * as T from 'three';
 import {CSS2DObject} from 'three/addons/CSS2DRenderer.js';
-import {P} from './palette.js?v=20261024115003';
-import {group,box,cyl,ball,mesh,mat} from './primitives.js?v=20261024115003';
-import {shortest} from './world.js?v=20261024115003';
+import {P} from './palette.js?v=20261024194217';
+import {group,box,cyl,ball,mesh,mat} from './primitives.js?v=20261024194217';
+import {shortest} from './world.js?v=20261024194217';
 import {GLTFLoader} from 'three/addons/GLTFLoader.js';
 import {clone as cloneSkinned} from 'three/addons/SkeletonUtils.js';
 // 10/23 熊爸：人太粗糙 → 換成 Kenney Mini Characters（CC0，assets/people/License.txt），內建 idle／walk 動作。
