@@ -1,6 +1,6 @@
 import * as T from 'three';
-import {P} from './palette.js?v=20261024091636';
-import {group,mesh,ball,box,umbrella} from './primitives.js?v=20261024091636';
+import {P} from './palette.js?v=20261024113821';
+import {group,mesh,ball,box,umbrella} from './primitives.js?v=20261024113821';
 // Stylised geographic silhouettes, drawn here for this scene (not survey boundaries).
 const outlines={
  home:[[-.96,.43],[-1.04,.13],[-.99,-.11],[-.88,-.34],[-.67,-.48],[-.45,-.52],[-.28,-.73],[-.04,-.81],[.15,-.74],[.21,-.47],[.32,-.45],[.47,-1.03],[.58,-.83],[.65,-.51],[.83,-.25],[.97,.07],[.91,.37],[.73,.63],[.53,.76],[.35,.69],[.23,.57],[.08,.62],[-.12,.45],[-.36,.43],[-.59,.61],[-.84,.65]],

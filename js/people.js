@@ -1,8 +1,8 @@
 import * as T from 'three';
 import {CSS2DObject} from 'three/addons/CSS2DRenderer.js';
-import {P} from './palette.js?v=20261024091636';
-import {group,box,cyl,ball,mesh,mat} from './primitives.js?v=20261024091636';
-import {shortest} from './world.js?v=20261024091636';
+import {P} from './palette.js?v=20261024113821';
+import {group,box,cyl,ball,mesh,mat} from './primitives.js?v=20261024113821';
+import {shortest} from './world.js?v=20261024113821';
 import {GLTFLoader} from 'three/addons/GLTFLoader.js';
 import {clone as cloneSkinned} from 'three/addons/SkeletonUtils.js';
 // 10/23 熊爸：人太粗糙 → 換成 Kenney Mini Characters（CC0，assets/people/License.txt），內建 idle／walk 動作。
@@ -15,6 +15,8 @@ function loadModel(name){return models[name]??=loader.loadAsync(`assets/people/$
 const RECOLOR={
  // 廚房實驗室主廚：白廚師服、深灰褲、黑鞋、咖啡鬍子（頭頂另外加廚師帽，見 creatures.js）
  chef:[['body-mesh',288,256,'#F4F1EA'],['body-mesh',352,256,'#4B5553'],['body-mesh',352,384,'#3A3A3F'],['head-mesh',352,384,'#7A5038'],['head-mesh',416,384,'#7A5038']],
+ // 西裝路人（10/24 熊爸：參考 11點熱吵店片段的西裝造型，不掛名字、只是路人）：橄欖灰西裝外套、黑西褲、白襯衫、深藍領帶、深色短髮
+ suit:[['head-mesh',352,384,'#2B2522'],['body-mesh',32,384,'#7D7E66',.19,1],['body-mesh',32,384,'#26262A',-1,.19],['body-mesh',288,256,'#34405A']],
  // 熊爸（10/23 熊爸 Google 相簿 3/13 自拍）：淺棕挑染側分、白 T，島上照舊穿咖啡色圍裙
  'bear-dad':[['head-mesh',352,384,'#B07E52'],['body-mesh',32,384,'#F3EFE7',.19,1],['body-mesh',32,384,'#4B5553',-1,.19],['body-mesh',288,384,'#6E4E36'],['body-mesh',288,256,'#6E4E36']],
  // 熊老闆（10/23 熊爸給的照片）：深咖啡長髮、淺色牛仔襯衫、膚色偏白
@@ -32,7 +34,7 @@ function recolor(model,rules){let map=null;model.traverse(o=>{if(o.isMesh&&!map)
 // 模型的 idle／walk 依是否在走路平滑混合。
 export function animate(a,walking,dt,pace=1){const A=a.anim;if(!A)return false;A.w+=((walking?1:0)-A.w)*Math.min(1,dt*8);A.walk.setEffectiveWeight(A.w);A.idle.setEffectiveWeight(1-A.w);A.walk.timeScale=pace;A.mixer.update(dt);return true;}
 export function dress(actor,name,onLoad){if(!useModels||!name)return;loadModel(name).then(gltf=>{const m=cloneSkinned(gltf.scene);m.scale.setScalar(MODEL_SCALE);m.traverse(o=>{if(o.isMesh){o.castShadow=false;o.frustumCulled=false;}});if(RECOLOR[actor.id])recolor(m,RECOLOR[actor.id]);actor.body.visible=false;actor.g.add(m);
- const mixer=new T.AnimationMixer(m),action=n=>mixer.clipAction(T.AnimationClip.findByName(gltf.animations,n));actor.anim={mixer,idle:action('idle'),walk:action('walk'),w:0};actor.anim.idle.play();actor.anim.walk.play();actor.anim.walk.setEffectiveWeight(0);onLoad?.(m);}).catch(e=>console.warn('人物模型載入失敗，沿用程式人物',e));}
+ const mixer=new T.AnimationMixer(m),action=n=>mixer.clipAction(T.AnimationClip.findByName(gltf.animations,n));actor.anim={mixer,action,idle:action('idle'),walk:action('walk'),w:0};actor.anim.idle.play();actor.anim.walk.play();actor.anim.walk.setEffectiveWeight(0);onLoad?.(m);}).catch(e=>console.warn('人物模型載入失敗，沿用程式人物',e));}
 const faceGeo=new T.SphereGeometry(.39,8,5),hairGeo=new T.SphereGeometry(.405,8,3,0,Math.PI*2,0,Math.PI*.62),eyeGeo=new T.CircleGeometry(.03,6);
 export function human(parent,style){const g=group(parent),body=group(g),skin='#E4B68E';
  const shadow=new T.Mesh(new T.CircleGeometry(.43,12),new T.MeshBasicMaterial({color:P.coffee,transparent:true,opacity:.18,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.02;g.add(shadow);
@@ -52,7 +54,8 @@ export function createPeople(scene,walkGraph,{onGuest,onHost,smallScreen,ferry})
  const configs=[
  {id:'bear-dad',name:'熊爸',model:'character-male-d',logo:'assets/brand/AC-logo-black.png',home:'home',destinations:['kitchen','library','farm','market','home'],style:{shirt:P.cream,apron:P.coffee,pants:'#4B5553',hair:P.coffee}},
  {id:'bear-boss',name:'熊老闆',model:'character-female-f',logo:'assets/brand/01_狗頭.svg',home:'market',destinations:['home','farm','library','market','kitchen'],style:{shirt:P.sage,apron:P.darkWood,pants:P.coffee,hair:'#6B5843',long:true}},
- ...Array.from({length:6},(_,i)=>({id:`guest-${i+1}`,home:['market','library','kitchen','farm','market','home'][i],destinations:[['library','market','kitchen'],['market','help','market','home','library'],['market','farm','kitchen'],['home','market','farm'],['kitchen','library','market'],['farm','market','help','market','home']][i],guest:true,model:['character-female-b','character-male-f','character-female-d','character-male-a','character-female-e','character-male-e'][i],style:{shirt:[P.pink,P.sage,P.mustard,P.cream,P.terra,P.sage][i],pants:[P.coffee,'#4B5553'][i%2],hair:[P.coffee,'#6B5843','#91735B'][i%3],bag:i%2===0,cap:i===2?P.mustard:null}}))
+ ...Array.from({length:6},(_,i)=>({id:`guest-${i+1}`,home:['market','library','kitchen','farm','market','home'][i],destinations:[['library','market','kitchen'],['market','help','market','home','library'],['market','farm','kitchen'],['home','market','farm'],['kitchen','library','market'],['farm','market','help','market','home']][i],guest:true,model:['character-female-b','character-male-f','character-female-d','character-male-a','character-female-e','character-male-e'][i],style:{shirt:[P.pink,P.sage,P.mustard,P.cream,P.terra,P.sage][i],pants:[P.coffee,'#4B5553'][i%2],hair:[P.coffee,'#6B5843','#91735B'][i%3],bag:i%2===0,cap:i===2?P.mustard:null}})),
+ {id:'suit',guest:true,plain:true,home:'market',destinations:['library','market','home','kitchen','market'],model:'character-male-d',style:{shirt:'#7D7E66',pants:'#26262A',hair:'#2B2522'}}
  ];
  function route(from,to){const ids=shortest(weighted,from,to),legs=[];let points=[];const add=list=>{for(const p of list)if(!points.length||points.at(-1).distanceToSquared(p)>.0001)points.push(p.clone());};
  for(let i=1;i<ids.length;i++){const edge=walkGraph[ids[i-1]].find(e=>e.to===ids[i]);add(edge.points);if(edge.ferry){legs.push({walk:points},{ferry:edge.ferry});points=[];add(edge.land);}}if(points.length)legs.push({walk:points});return legs;}
@@ -69,7 +72,7 @@ export function createPeople(scene,walkGraph,{onGuest,onHost,smallScreen,ferry})
  }
  let lastSmall=null;
  function update(dt,now,camera,selectedIsland){
- const small=smallScreen();if(small!==lastSmall){for(const [i,a] of actors.entries()){a.enabled=!a.guest||!small||i<5;a.g.visible=a.enabled;a.label.visible=a.enabled;a.marker.hidden=!a.enabled;a.anchor.style.display=a.enabled?'':'none';}lastSmall=small;}
+ const small=smallScreen();if(small!==lastSmall){for(const [i,a] of actors.entries()){a.enabled=!a.guest||a.plain||!small||i<5;a.g.visible=a.enabled;a.label.visible=a.enabled;a.marker.hidden=!a.enabled||!!a.plain;a.anchor.style.display=a.enabled?'':'none';}lastSmall=small;}
  for(const a of actors){if(!a.enabled)continue;
  let walking=false;
  if(a.pause>0){a.pause-=dt;}else{
@@ -97,5 +100,5 @@ export function createPeople(scene,walkGraph,{onGuest,onHost,smallScreen,ferry})
  function find(id){return actors.find(a=>a.id===id);}
  // 一道菜串聯：讓某個人依序走過幾座島（走完回到平常的行程）
  function walkPath(id,ids){const a=find(id);if(!a)return;let cur=a.island;const plan=[];for(const to of ids){if(to!==cur)plan.push(...route(cur,to));cur=to;}a.plan=plan;a.route=[];a.ride=null;a.pause=0;a.destination=ids.at(-1);}
- return {update,layout,find,walkPath,hits:actors.map(a=>a.hit),activate(id){const a=find(id);if(a?.guest)onGuest(id);else if(a)onHost(id);},pause(id,seconds=8){const a=find(id);if(a)a.pause=seconds;},actors};
+ return {update,layout,find,walkPath,hits:actors.map(a=>a.hit),activate(id){const a=find(id);if(a?.plain)return;if(a?.guest)onGuest(id);else if(a)onHost(id);},pause(id,seconds=8){const a=find(id);if(a)a.pause=seconds;},actors};
 }

@@ -1,5 +1,5 @@
-import {coastline} from './coast.js?v=20261024091636';
-import {BRIDGES} from './world.js?v=20261024091636';
+import {coastline} from './coast.js?v=20261024113821';
+import {BRIDGES} from './world.js?v=20261024113821';
 export function createFallback(data,onSelect){
  const stage=document.querySelector('#stage'),positions=[[185,265],[295,265],[80,265],[132,360],[132,170],[285,140]];
  const byId=Object.fromEntries(data.islands.map((i,n)=>[i.id,positions[n]]));
