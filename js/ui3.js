@@ -1,6 +1,6 @@
-import {escapeHTML as esc,display,validLink} from './content.js?v=20261024113821';
-import {PERIODS,periodOf} from './env.js?v=20261024113821';
-import {CREATURES} from './creatures.js?v=20261024113821';
+import {escapeHTML as esc,display,validLink} from './content.js?v=20261024115003';
+import {PERIODS,periodOf} from './env.js?v=20261024115003';
+import {CREATURES} from './creatures.js?v=20261024115003';
 // ③ 介面：入口頁、24 小時時間軸、開團時間軸、清單搜尋。
 const $=s=>document.querySelector(s);
 const store={get(k){try{return localStorage.getItem(k);}catch{return null;}},set(k,v){try{localStorage.setItem(k,v);}catch{}}};

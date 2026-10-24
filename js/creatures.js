@@ -1,8 +1,8 @@
 import * as T from 'three';
-import {P} from './palette.js?v=20261024113821';
-import {group,box,cyl,ball,line} from './primitives.js?v=20261024113821';
-import {coastRadius} from './coast.js?v=20261024113821';
-import {human,dress,animate} from './people.js?v=20261024113821';
+import {P} from './palette.js?v=20261024115003';
+import {group,box,cyl,ball,line} from './primitives.js?v=20261024115003';
+import {coastRadius} from './coast.js?v=20261024115003';
+import {human,dress,animate} from './people.js?v=20261024115003';
 import {CSS2DObject} from 'three/addons/CSS2DRenderer.js';
 // ② 動物、狗、廚師與墨爾本電車。座標都是各島的本地座標（島中心為原點，+z 朝南）。
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -19,16 +19,19 @@ export const CREATURES={
 };
 
 // ---------- 模型 ----------
-function dog(parent,{fur,ear,nose,earLong,sleepy}){
+// 10/24 熊爸：狗看起來偏綠——背光面只吃到偏黃的環境光，白毛暗下來變橄欖色。毛色材質加一點自發光把背光面撐亮；屁那的嘴巴、耳朵照本尊改焦糖杏色。
+const PEANUT={fur:'#F6DDBC',ear:'#D9975E',muzzle:'#E3A56E',nose:P.ink},BUTTER={fur:'#FFFAF5',ear:'#F4E6DA',nose:P.nose,earLong:true,sleepy:true};
+function dog(parent,{fur,ear,nose,earLong,sleepy,muzzle}){
  const g=group(parent),body=group(g);ball(body,.42,fur,0,.62,0,.85,.8,1.3);
  for(let i=0;i<7;i++)ball(body,.17,fur,Math.sin(i*2.1)*.22,.9+(i%2)*.04,-.35+i*.12);
  const legs=[];for(const [x,z] of [[-.2,.32],[.2,.32],[-.2,-.32],[.2,-.32]]){const l=group(body,x,.45,z);cyl(l,.09,.42,fur,0,-.2,0,6);ball(l,.11,fur,0,-.4,0);legs.push(l);}
- const head=group(body,0,1.02,.55);ball(head,.3,fur,0,0,0);ball(head,.15,fur,0,-.07,.27,1,.85,1.1);ball(head,.065,nose,0,-.03,.42);
+ const head=group(body,0,1.02,.55);ball(head,.3,fur,0,0,0);ball(head,.15,muzzle||fur,0,-.07,.27,1,.85,1.1);ball(head,.065,nose,0,-.03,.42);
  for(const x of [-.11,.11])sleepy?box(head,.08,.025,.02,P.ink,x,.06,.28):ball(head,.04,P.ink,x,.06,.27);
  for(const x of [-.28,.28])ball(head,.15,ear,x,earLong?-.2:-.08,-.02,.6,earLong?1.8:1.3,.9);
  ball(head,.19,fur,0,.27,-.03);const collar=cyl(body,.25,.08,P.pink,0,.86,.42,10);collar.rotation.x=1;
  const tongue=box(head,.09,.02,.15,P.pink,0,-.17,.36);tongue.visible=false;
  const tail=group(body,0,.86,-.58);ball(tail,.13,fur,0,.06,-.04);
+ const lift=new Map();body.traverse(o=>{if(!o.isMesh||o===tongue)return;const c=o.material.color;if(c.r+c.g+c.b<1.2)return;if(!lift.has(o.material)){const m=o.material.clone();m.emissive.copy(c).multiplyScalar(.28);lift.set(o.material,m);}o.material=lift.get(o.material);});
  return {g,body,head,legs,tail,tongue};
 }
 function cow(parent,color){const g=group(parent),body=group(g);box(body,.8,.7,1.4,color,0,.95,0);box(body,.82,.3,.5,P.cream,0,1.05,-.2);
@@ -135,13 +138,13 @@ export function createCreatures(scene,islands,track,{onCreature,smallScreen,ferr
  const home=at('home'),farm=at('farm'),kitchen=at('kitchen');
  if(home){
  // 熊爸家：屁那在東邊草地跑圈、中午躲樹蔭；霸特在太陽下睡，晚上回屋簷。
- const peanut=dog(home,{fur:P.peanut,ear:P.apricot,nose:P.ink});peanut.g.scale.setScalar(.82);peanut.g.position.set(6.6,.3,2.4);
+ const peanut=dog(home,PEANUT);peanut.g.scale.setScalar(.82);peanut.g.position.set(6.6,.3,2.4);
  add(dogActor(peanut,{speed:3.2,loop:[[7.6,1.2],[8.2,2.6],[7.4,4.2],[5.9,4.4],[5.5,3],[6.2,1.3]],spot:h=>h>=14&&h<15.5?{mode:'away'}:h>=11&&h<14?{mode:'pant',at:[-3.4,3.9]}:(h>=22||h<5.5)?{mode:'sleep',at:[1.2,1.4]}:{mode:'run',at:'loop'}}),'peanut',.75,.6);
- const butter=dog(home,{fur:P.butter,ear:P.butter,nose:P.nose,earLong:true,sleepy:true});butter.g.position.set(2.2,.3,7.4);
+ const butter=dog(home,BUTTER);butter.g.position.set(2.2,.3,7.4);
  add(dogActor(butter,{speed:1.6,loop:[[2.4,2.3]],spot:h=>h>=13&&h<15.5?{mode:'away'}:(h>=19||h<6.5)?{mode:'sleep',at:[2.3,1.1]}:h<11?{mode:'lie',at:[2.2,7.4]}:h<15?{mode:'lie',at:[2.2,7.4]}:{mode:'lie',at:[-3.6,6.6]}}),'butter',.8,.6);
- const help=at('help');if(help){const bv=dog(help,{fur:P.butter,ear:P.butter,nose:P.nose,earLong:true,sleepy:true});bv.g.position.set(-1.8,.3,5.6);bv.g.rotation.y=2.4;
+ const help=at('help');if(help){const bv=dog(help,BUTTER);bv.g.position.set(-1.8,.3,5.6);bv.g.rotation.y=2.4;
   add(dogActor(bv,{speed:1,loop:[[-1.8,5.6]],spot:h=>h>=13&&h<15.5?{mode:'lie',at:[-1.8,5.6],jump:true}:{mode:'away'}}),'butter',.8,.6);}
- if(ferry&&ferry.pier){const pv=dog(scene,{fur:P.peanut,ear:P.apricot,nose:P.ink});pv.g.scale.setScalar(.82);const at=ferry.pier;pv.g.position.copy(at);pv.g.rotation.y=ferry.facing;
+ if(ferry&&ferry.pier){const pv=dog(scene,PEANUT);pv.g.scale.setScalar(.82);const at=ferry.pier;pv.g.position.copy(at);pv.g.rotation.y=ferry.facing;
   add(dogActor(pv,{speed:2,loop:[[at.x,at.z]],spot:h=>h>=14&&h<15.5?{mode:'stand',at:[at.x,at.z],jump:true,wag:ferry.state.phase==='wait'&&ferry.state.from==='market'}:{mode:'away'}}),'peanut',.75,.6);}
  // 澳洲動物
  add(wanderer(kangaroo(home,true),[-8.4,-7.4,1.8,4],{speed:2.2,hop:.55,pause:[2.5,6],y:.3}),'kangaroo',.8,1);
