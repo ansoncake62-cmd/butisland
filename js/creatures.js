@@ -1,9 +1,9 @@
 import * as T from 'three';
-import {P} from './palette.js?v=20261024194217';
-import {createDog} from './dogs.js?v=20261024194217';
-import {group,box,cyl,ball,line} from './primitives.js?v=20261024194217';
-import {coastRadius} from './coast.js?v=20261024194217';
-import {human,dress,animate} from './people.js?v=20261024194217';
+import {P} from './palette.js?v=20261025111804';
+import {createDog} from './dogs.js?v=20261025111804';
+import {group,box,cyl,ball,line} from './primitives.js?v=20261025111804';
+import {coastRadius} from './coast.js?v=20261025111804';
+import {human,dress,animate} from './people.js?v=20261025111804';
 import {CSS2DObject} from 'three/addons/CSS2DRenderer.js';
 // ② 動物、狗、廚師與墨爾本電車。座標都是各島的本地座標（島中心為原點，+z 朝南）。
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -182,7 +182,7 @@ export function createCreatures(scene,islands,track,{onCreature,smallScreen,ferr
    W.spout.material.opacity=k>.25&&k<.55?.75*Math.sin((k-.25)/.3*Math.PI):0;W.spout.scale.set(1,.6+Math.sin(t*9)*.15,1);if(k>=1)W.g.visible=false;}
   if(podState){podState.t+=dt;const S=podState,dir=new T.Vector3(Math.sin(S.heading),0,Math.cos(S.heading));pod.forEach((d,i)=>{const tt=S.t-i*.35;if(tt<0||tt>S.life){d.visible=false;return;}d.visible=true;const jump=(tt%1.6)/1.6,y=-4.6+Math.sin(jump*Math.PI)*2.4;d.position.set(S.x+dir.x*tt*4+i*1.2*dir.z,y,S.z+dir.z*tt*4-i*1.2*dir.x);d.rotation.set(-Math.cos(jump*Math.PI)*.9,S.heading,0,'YXZ');});if(S.t>S.life+1){pod.forEach(d=>d.visible=false);podState=null;}}}
  return {actors,hits,
- update(dt,t,hour){for(const a of actors){a.update(dt,t,hour);if(a.tag)a.tag.visible=a.g.visible;}
+	 update(dt,t,hour,camera){for(const a of actors){a.update(dt,t,hour);if(a.tag){const world=a.g.getWorldPosition(new T.Vector3()),near=camera&&camera.position.distanceTo(world)<75;a.tag.visible=a.g.visible&&near;}}
   if(bars){const near=trams.some(f=>{const d=ahead(f());return d<7||d>track.length-2.5;})&&!peopleNear?.(crossing.point,3);for(const b of bars){const goal=near?0:-Math.PI/2*.95;b.rotation.x+=(goal-b.rotation.x)*Math.min(1,dt*3);}}
   for(const o of sky){if(o.flock){const a=t*o.speed+o.phase;o.flock.position.set(o.c[0]+Math.cos(a)*o.R,o.c[1]+Math.sin(t*.3+o.phase)*1.5,o.c[2]+Math.sin(a)*o.R);o.flock.rotation.y=-a;}else o.wings.forEach((w,i)=>w.rotation.z=(i?-1:1)*Math.sin(t*7+o.phase)*.6);}
   updateSea(dt,t);},

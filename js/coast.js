@@ -1,6 +1,6 @@
 import * as T from 'three';
-import {P} from './palette.js?v=20261024194217';
-import {group,mesh,ball,box,umbrella} from './primitives.js?v=20261024194217';
+import {P} from './palette.js?v=20261025111804';
+import {group,mesh,ball,box,umbrella} from './primitives.js?v=20261025111804';
 // Stylised geographic silhouettes, drawn here for this scene (not survey boundaries).
 const outlines={
  home:[[-.96,.43],[-1.04,.13],[-.99,-.11],[-.88,-.34],[-.67,-.48],[-.45,-.52],[-.28,-.73],[-.04,-.81],[.15,-.74],[.21,-.47],[.32,-.45],[.47,-1.03],[.58,-.83],[.65,-.51],[.83,-.25],[.97,.07],[.91,.37],[.73,.63],[.53,.76],[.35,.69],[.23,.57],[.08,.62],[-.12,.45],[-.36,.43],[-.59,.61],[-.84,.65]],
@@ -41,7 +41,10 @@ export function terrain(parent,r,color,seed,{id='',landings=[]}={}){const g=grou
  const flat=a=>landings.reduce((m,l)=>Math.max(m,1-smooth((angleDistance(a,l)-.14)/.28)),0);
  // 10/23 熊爸：島邊緣弧面處理不行 → 改成一條連續的剖面（不再一圈圈疊台階）：
  // 沙灘方向＝草地圓滑彎下去接一整片緩坡沙灘；懸崖方向＝草地邊圓角後直落；橋頭／碼頭＝平的一路到邊。
- const shore=a=>[1.1+beach(a)*.26,-3.75];
+ // Break the last remaining concentric silhouette: sand reaches farther in
+ // some coves while the waterline pulls back around neighbouring headlands.
+ const coastWobble=a=>.022*Math.sin(a*5+seed*.7)+.012*Math.sin(a*11-seed);
+ const shore=a=>[1.085+beach(a)*.29+coastWobble(a),-3.75];
  const prof=(a,t)=>{const b=beach(a),f=flat(a),end=shore(a)[0];
   // beach: radius core→end, height eases from .28 down to -3.75 (convex top, gentle toe)
   const rb=core+(end-core)*t,yb=.28-4.03*(t<.35?Math.pow(t/.35,2)*.18:.18+.82*smooth((t-.35)/.65));
@@ -51,13 +54,13 @@ export function terrain(parent,r,color,seed,{id='',landings=[]}={}){const g=grou
   // bridgeheads stay flat to the very edge, then drop
   const rf=t<.6?core+(1.02-core)*t/.6:1.02+(end-1.02)*Math.pow((t-.6)/.4,2.2),yf=t<.6?.28:.28-4.03*smooth((t-.6)/.2);
   return [r*(1-f)+rf*f,y*(1-f)+yf*f];};
- const colorAt=(a,t)=>{const[,y]=prof(a,t),b=beach(a);if(y>.1)return new T.Color(color);if(y>-.25)return new T.Color(color).lerp(new T.Color(b>.5?'#E7D2A6':P.cliff),Math.min(1,(.1-y)/.35));return b>.5?new T.Color('#F0DAB2').lerp(new T.Color('#E6CC9E'),Math.min(1,-y/3.75)):new T.Color(P.cliff).lerp(new T.Color('#B59CAE'),Math.min(1,-y/3));};
+ const colorAt=(a,t)=>{const[,y]=prof(a,t),b=beach(a);if(y>.1)return new T.Color(color);if(y>-.3)return new T.Color(color).lerp(new T.Color(b>.5?'#E8D2A7':P.cliff),smooth((.1-y)/.4));return new T.Color(b>.5?'#E8CEA2':'#B79FAF');};
  const band=(inner,outer,colors,rough=0)=>mesh(g,variableBand(points,inner,outer,colors,rough),'white',0,0,0,{side:T.DoubleSide,vertexColors:true});
- const N=14;for(let k=0;k<N;k++){const t0=k/N,t1=(k+1)/N;band(a=>prof(a,t0),a=>prof(a,t1),(a,j)=>colorAt(a,j?t1:t0));}
- band(shore,a=>[shore(a)[0]+.12,-3.9],()=>new T.Color('#A8DDD8'));
- band(a=>[shore(a)[0]+.12,-3.9],a=>[shore(a)[0]+.25,-3.98],()=>new T.Color('#7FC3C6'));
+ const N=10;for(let k=0;k<N;k++){const t0=k/N,t1=(k+1)/N;band(a=>prof(a,t0),a=>prof(a,t1),(a,j)=>colorAt(a,j?t1:t0),.018);}
+ band(shore,a=>[shore(a)[0]+.07+.025*Math.sin(a*7+seed),-3.9],()=>new T.Color('#91D1CE'));
+ band(a=>[shore(a)[0]+.07+.025*Math.sin(a*7+seed),-3.9],a=>[shore(a)[0]+.17+.035*Math.sin(a*4-seed),-3.98],()=>new T.Color('#72B9BE'));
  // Broken white surf, with a broad sand shelf only on beach-facing shores.
- for(let k=0;k<8;k++){const start=k*15,arc=Array.from({length:7},(_,i)=>points[(start+i)%points.length]);const foam=variableBand(arc,a=>[shore(a)[0]+.018,-3.77],a=>[shore(a)[0]+.032,-3.78],()=>new T.Color('white'));mesh(g,foam,'#D9E9D9',0,0,0,{side:T.DoubleSide,transparent:true,opacity:.65});}
+ for(let k=0;k<7;k++){const start=(k*19+Math.floor(seed*3))%points.length,count=4+(k%4),arc=Array.from({length:count},(_,i)=>points[(start+i)%points.length]);const foam=variableBand(arc,a=>[shore(a)[0]+.008+.012*Math.sin(a*9),-3.77],a=>[shore(a)[0]+.025+.018*Math.sin(a*6+seed),-3.78],()=>new T.Color('white'));mesh(g,foam,'#D9E9D9',0,0,0,{side:T.DoubleSide,transparent:true,opacity:.5});}
  for(let i=0;i<20;i++){const a=i*2.399+seed,v=coastRadius(a,r,seed,id),x=Math.sin(a)*v,z=Math.cos(a)*v,b=beach(a);
  if(i%3!==1&&b<.45){const rock=ball(g,.4+(i%4)*.14,i%2?'#C7AEC0':'#A88FA6',x*1.09,-2.85+(i%2)*.2,z*1.09,1.4,.9,1);rock.rotation.y=a;}
  else if(i%3===1){ball(g,.3,P.sage,x*.78,.4,z*.78,1.3,.65,.9);ball(g,.17,P.grassDark,x*.77,.48,z*.77);}}

@@ -1,15 +1,15 @@
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/OrbitControls.js';
 import {CSS2DRenderer,CSS2DObject} from 'three/addons/CSS2DRenderer.js';
-import {P} from './palette.js?v=20261024194217';
-import {R,axial,BRIDGES} from './world.js?v=20261024194217';
-import {group,box,cyl,ball,line,path,tree,umbrella,mat,roof} from './primitives.js?v=20261024194217';
-import {islandBase,builders} from './models.js?v=20261024194217';
-import {coastRadius,coastline,coastBand,surface,bulges} from './coast.js?v=20261024194217';
-import {createPeople} from './people.js?v=20261024194217';
-import {buildTrack,createCreatures} from './creatures.js?v=20261024194217';
-import {batchScenery} from './static-scene.js?v=20261024194217';
-import {createEnvironment} from './env.js?v=20261024194217';
+import {P} from './palette.js?v=20261025111804';
+import {R,axial,BRIDGES} from './world.js?v=20261025111804';
+import {group,box,cyl,ball,line,path,tree,umbrella,mat,roof} from './primitives.js?v=20261025111804';
+import {islandBase,builders} from './models.js?v=20261025111804';
+import {coastRadius,coastline,coastBand,surface,bulges} from './coast.js?v=20261025111804';
+import {createPeople} from './people.js?v=20261025111804';
+import {buildTrack,createCreatures} from './creatures.js?v=20261025111804';
+import {batchScenery} from './static-scene.js?v=20261025111804';
+import {createEnvironment} from './env.js?v=20261025111804';
 export function createScene(data,onSelect,onGuest,onHost,onCreature){
  const stage=document.querySelector('#stage'),labelRoot=document.querySelector('#labels');
  const mobile=()=>innerWidth<=600;
@@ -26,11 +26,12 @@ export function createScene(data,onSelect,onGuest,onHost,onCreature){
  // The ferry docks face each other across open water.
  const dockAngle=id=>{if(id==='market')return Math.PI*.76;const other=id==='help'?'market':null;if(!other)return null;const a=axial(data.islands.find(v=>v.id===id).axial),b=axial(data.islands.find(v=>v.id===other).axial);return Math.atan2(b.x-a.x,b.z-a.z);};
  const map=new T.Group();scene.add(map);const islands=new Map(),clickables=[],labelItems=[],walkGraph={};
+ const contact=(parent,w,d,x=0,z=0,opacity=.12)=>{const m=new T.Mesh(new T.CircleGeometry(1,28),new T.MeshBasicMaterial({color:'#4F3B4E',transparent:true,opacity,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(x,.305,z);m.scale.set(w,d,1);parent.add(m);return m;};
  const texture=new T.TextureLoader().load('assets/brand/01_狗頭.png');texture.colorSpace=T.SRGBColorSpace;
  // 外圈橋頭（軌道下橋處）海岸往外推 22%，讓下橋後有足夠的草地
  for(const [a,b] of BRIDGES){if(a==='home'||b==='home')continue;const G=bridgeGeom(a,b);for(const [id,sx,sz] of [[a,G.ox+G.ux*G.edgeA,G.oz+G.uz*G.edgeA],[b,G.ox-G.ux*G.edgeB,G.oz-G.uz*G.edgeB]]){const out=G.out,lx=Math.cos(G.angle)*out*1.1,lz=-Math.sin(G.angle)*out*1.1;(bulges[id]||=[]).push([Math.atan2(sx+lx,sz+lz),.38]);}}
  for(const item of data.islands){const p=axial(item.axial),g=group(map,p.x,item.height,p.z);g.userData.islandId=item.id;const r=rOf(item.id);
- const seed=Number(item.number)*1.37;const landings=BRIDGES.filter(pair=>pair.includes(item.id)).map(([a,b])=>{const G=bridgeGeom(a,b);return a===item.id?Math.atan2(G.ox+G.ux*G.edgeA,G.oz+G.uz*G.edgeA):Math.atan2(G.ox-G.ux*G.edgeB,G.oz-G.uz*G.edgeB);});const ferry=dockAngle(item.id);if(ferry!==null)landings.push(ferry);const land=islandBase(g,r,item.height,item.color,seed,{id:item.id,landings});const content=group(g);if(item.id==='market')content.scale.set(.78,1,1);const result=builders[item.model](content,Object.keys(data.posts||{}).filter(k=>!k.startsWith('sample')).length);
+ const seed=Number(item.number)*1.37;const landings=BRIDGES.filter(pair=>pair.includes(item.id)).map(([a,b])=>{const G=bridgeGeom(a,b);return a===item.id?Math.atan2(G.ox+G.ux*G.edgeA,G.oz+G.uz*G.edgeA):Math.atan2(G.ox-G.ux*G.edgeB,G.oz-G.uz*G.edgeB);});const ferry=dockAngle(item.id);if(ferry!==null)landings.push(ferry);const land=islandBase(g,r,item.height,item.color,seed,{id:item.id,landings});const content=group(g);if(item.id==='market')content.scale.set(.78,1,1);const result=builders[item.model](content,Object.keys(data.posts||{}).filter(k=>!k.startsWith('sample')).length);const pads={home:[7.5,5.2,.2,-1.2],market:[7.2,5.6,0,-1],farm:[7,5.5,0,-.5],kitchen:[7,5.2,0,-.8],library:[6.5,5.4,0,-1],help:[4.7,4.2,0,-.2]},pad=pads[item.id];if(pad)contact(g,...pad,.105);
  // A wider, invisible hit surface also makes grass edges easy to tap.
  const hit=new T.Mesh(surface(land.points,.31),new T.MeshBasicMaterial({visible:false}));hit.userData.islandId=item.id;g.add(hit);clickables.push(hit);
  const ring=new T.Mesh(coastBand(land.points,1.18,1.22,-3.7,-3.7),new T.MeshBasicMaterial({color:P.pink,side:T.DoubleSide,transparent:true,opacity:.9}));ring.visible=false;g.add(ring);
@@ -58,7 +59,7 @@ export function createScene(data,onSelect,onGuest,onHost,onCreature){
  // 10/23 熊爸：橋墩改成半圓拱形石墩——每一跨是一面開半圓拱門的石牆。
  const spans=Math.max(3,Math.round(length/5.5));for(let i=0;i<spans;i++){const A0=deckAt(i/spans),A1=deckAt((i+1)/spans),dx=A1.x-A0.x,dz=A1.z-A0.z,Ls=Math.hypot(dx,dz),top=Math.min(A0.y,A1.y)-.2,r=Math.min(Ls/2-.45,top+2.6),yb=top-r-.35;
   const sh=new T.Shape();sh.moveTo(0,-4.3);sh.lineTo(Ls,-4.3);sh.lineTo(Ls,top);sh.lineTo(0,top);sh.closePath();const hole=new T.Path();hole.moveTo(Ls/2-r,-4.1);hole.lineTo(Ls/2-r,yb);hole.absarc(Ls/2,yb,r,Math.PI,0,true);hole.lineTo(Ls/2+r,-4.1);hole.closePath();sh.holes.push(hole);
-  const geo=new T.ExtrudeGeometry(sh,{depth:4,bevelEnabled:false,curveSegments:10});geo.translate(0,0,-2);const arch=new T.Mesh(geo,mat(i%2?P.stoneDark:P.stone));arch.position.set(A0.x,0,A0.z);arch.rotation.y=Math.atan2(-dz,dx);arch.castShadow=arch.receiveShadow=true;bridge.add(arch);}
+  const geo=new T.ExtrudeGeometry(sh,{depth:4,bevelEnabled:false,curveSegments:10});geo.translate(0,0,-2);const arch=new T.Mesh(geo,mat(i%2?P.stoneDark:P.stone));arch.position.set(A0.x,0,A0.z);arch.rotation.y=Math.atan2(-dz,dx);arch.castShadow=arch.receiveShadow=true;bridge.add(arch);const shade=new T.Mesh(new T.CircleGeometry(1,20),new T.MeshBasicMaterial({color:'#40515B',transparent:true,opacity:.16,depthWrite:false}));shade.rotation.x=-Math.PI/2;shade.position.set((A0.x+A1.x)/2,-3.96,(A0.z+A1.z)/2);shade.scale.set(Math.max(1.2,Ls*.38),1.45,1);bridge.add(shade);}
 
  const approaches={};
  for(const I of [A,B]){const sign=I===A?1:-1,edge=I===A?edgeA:edgeB,ex=ux*edge*sign+G.ox+Math.cos(angle)*WALK*1.1,ez=uz*edge*sign+G.oz-Math.sin(angle)*WALK*1.1;const theta=Math.atan2(ex,ez),steps=Math.max(1,Math.ceil(Math.abs(theta)/.28));const roadRadius=a=>Math.min(I.item.id==='farm'?9.2:I.item.id==='home'?14.2:6.9,coastRadius(a,I.r,I.seed,I.item.id)*.77);let lastPoint=[0,roadRadius(0)];const route=[[0,3.6],lastPoint];path(I.g,[0,3.6],lastPoint,1.35);for(let j=1;j<=steps;j++){const a=theta*j/steps,next=[Math.sin(a)*roadRadius(a),Math.cos(a)*roadRadius(a)];path(I.g,lastPoint,next,1.35);route.push(next);lastPoint=next;}const pre=[ex-ux*sign*4.5,ez-uz*sign*4.5];path(I.g,lastPoint,pre,1.35);path(I.g,pre,[ex,ez],1.35);route.push(pre,[ex,ez]);approaches[I.item.id]=route.map(([x,z])=>new T.Vector3(I.p.x+x,I.item.height+.41,I.p.z+z));}
@@ -139,7 +140,7 @@ export function createScene(data,onSelect,onGuest,onHost,onCreature){
  for(let j=0;j<12&&collisions(x+dx,y+dy);j++)dy=(j%2?1:-1)*Math.ceil((j+1)/2)*(h+6);
  dy=T.MathUtils.clamp(y+dy,95,innerHeight-95)-y;occupied.push({x:x+dx,y:y+dy,w,h});b.style.marginLeft=`${dx}px`;b.style.marginTop=`${dy}px`;}people.layout(camera,occupied);}
  let last=0,lastTime=0;
- function frame(now){requestAnimationFrame(frame);if(document.hidden)return;if(now-last<(mobile()?1000/30:1000/60)-1)return;last=now;const dt=lastTime?Math.min((now-lastTime)/1000,.3):0;lastTime=now;people.update(dt,now/1000,camera,selected);creatures.update(dt,now/1000,hour);updateFerry(dt);env.update(dt);
+ function frame(now){requestAnimationFrame(frame);if(document.hidden)return;if(now-last<(mobile()?1000/30:1000/60)-1)return;last=now;const dt=lastTime?Math.min((now-lastTime)/1000,.3):0;lastTime=now;people.update(dt,now/1000,camera,selected);creatures.update(dt,now/1000,hour,camera,selected);updateFerry(dt);env.update(dt);
  if(tween){dirty=true;let t=tween.duration?Math.min(1,(now-tween.start)/tween.duration):1;t=t*t*(3-2*t);camera.position.lerpVectors(tween.fromPosition,tween.toPosition,t);controls.target.lerpVectors(tween.fromTarget,tween.toTarget,t);if(t>=1)tween=null;}
  const changed=controls.update();if(changed||tween||dirty||people.actors.length){renderer.render(scene,camera);labels.render(scene,camera);placeLabels();dirty=false;}}
  function resize(){renderer.shadowMap.enabled=!mobile();renderer.setPixelRatio(Math.min(devicePixelRatio,mobile()?1.5:2));camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);labels.setSize(innerWidth,innerHeight);if(!selected)overview(false);else focus(selected);}

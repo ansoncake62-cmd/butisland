@@ -1,8 +1,8 @@
 import * as T from 'three';
 import {CSS2DObject} from 'three/addons/CSS2DRenderer.js';
-import {P} from './palette.js?v=20261024194217';
-import {group,box,cyl,ball,mesh,mat} from './primitives.js?v=20261024194217';
-import {shortest} from './world.js?v=20261024194217';
+import {P} from './palette.js?v=20261025111804';
+import {group,box,cyl,ball,mesh,mat} from './primitives.js?v=20261025111804';
+import {shortest} from './world.js?v=20261025111804';
 import {GLTFLoader} from 'three/addons/GLTFLoader.js';
 import {clone as cloneSkinned} from 'three/addons/SkeletonUtils.js';
 // 10/23 熊爸：人太粗糙 → 換成 Kenney Mini Characters（CC0，assets/people/License.txt），內建 idle／walk 動作。
@@ -51,6 +51,7 @@ export function human(parent,style){const g=group(parent),body=group(g),skin='#E
 }
 export function createPeople(scene,walkGraph,{onGuest,onHost,smallScreen,ferry}){
  const actors=[],root=group(scene),weighted=Object.fromEntries(Object.entries(walkGraph).map(([id,edges])=>[id,Object.fromEntries(edges.map(e=>[e.to,e.length]))]));
+ const activityFacing={home:.35,market:Math.PI,library:Math.PI*.78,farm:-Math.PI*.45,kitchen:Math.PI,help:-Math.PI*.6};
  const configs=[
  {id:'bear-dad',name:'熊爸',model:'character-male-d',logo:'assets/brand/AC-logo-black.png',home:'home',destinations:['kitchen','library','farm','market','home'],style:{shirt:P.cream,apron:P.coffee,pants:'#4B5553',hair:P.coffee}},
  {id:'bear-boss',name:'熊老闆',model:'character-female-f',logo:'assets/brand/01_狗頭.svg',home:'market',destinations:['home','farm','library','market','kitchen'],style:{shirt:P.sage,apron:P.darkWood,pants:P.coffee,hair:'#6B5843',long:true}},
@@ -75,19 +76,19 @@ export function createPeople(scene,walkGraph,{onGuest,onHost,smallScreen,ferry})
  const small=smallScreen();if(small!==lastSmall){for(const [i,a] of actors.entries()){a.enabled=!a.guest||a.plain||!small||i<5;a.g.visible=a.enabled;a.label.visible=a.enabled;a.marker.hidden=!a.enabled||!!a.plain;a.anchor.style.display=a.enabled?'':'none';}lastSmall=small;}
  for(const a of actors){if(!a.enabled)continue;
  let walking=false;
- if(a.pause>0){a.pause-=dt;}else{
+ if(a.pause>0){a.pause-=dt;if(!a.guest){const guest=actors.find(b=>b.guest&&b.enabled&&b.g.visible&&b.g.position.distanceToSquared(a.g.position)<64);if(guest){const d=guest.g.position.clone().sub(a.g.position);a.g.rotation.y=Math.atan2(d.x,d.z);}}}else{
  if(!a.route.length&&!a.ride){if(!a.plan?.length){const target=a.destinations[a.trip++%a.destinations.length];a.plan=route(a.island,target);a.destination=target;}const leg=a.plan.shift();if(leg?.ferry)a.ride={...leg.ferry,aboard:false,offset:new T.Vector3((Math.random()-.5)*1.4,0,(Math.random()-.5)*2)};else if(leg)a.route=leg.walk;a.segment=0;a.progress=0;}
  if(a.ride&&ferry){const F=ferry.state;if(!a.ride.aboard){if(F.phase==='wait'&&F.from===a.ride.from&&F.t<3)a.ride.aboard=true;}else{const o=a.ride.offset.clone().applyAxisAngle(new T.Vector3(0,1,0),ferry.boat.rotation.y);a.g.position.copy(ferry.boat.position).add(o).setY(ferry.boat.position.y+1.35);if(F.phase==='wait'&&F.from===a.ride.to){a.ride=null;}}}
  let remaining=a.ride?0:dt*a.speed;
  while(remaining>0&&a.segment<a.route.length-1){const A=a.route[a.segment],B=a.route[a.segment+1],length=A.distanceTo(B),available=length-a.progress,step=Math.min(available,remaining);a.progress+=step;remaining-=step;
  a.g.position.lerpVectors(A,B,length?a.progress/length:1);const dir=B.clone().sub(A);if(dir.lengthSq()>.0001)a.g.rotation.y=Math.atan2(dir.x,dir.z);walking=true;
  if(a.progress>=length-.00001){a.segment++;a.progress=0;}}
- if(a.route.length&&a.segment>=a.route.length-1){a.route=[];if(!a.plan?.length){a.island=a.destination;a.pause=2.5+(a.trip%3);}}
+ if(a.route.length&&a.segment>=a.route.length-1){a.route=[];if(!a.plan?.length){a.island=a.destination;a.pause=(a.guest?4.5:6)+(a.trip%3);a.g.rotation.y=(activityFacing[a.island]??0)+(a.guest?((a.trip%3)-1)*.16:0);}}
  }
  animate(a,walking,dt,a.speed*.9);
  const swing=walking?Math.sin(now*a.speed*6+a.phase)*.45:0;a.legs[0].rotation.x=swing;a.legs[1].rotation.x=-swing;a.arms[0].rotation.x=-swing*.65;a.arms[1].rotation.x=swing*.65;a.body.position.y=walking?Math.abs(Math.sin(now*a.speed*6+a.phase))*.045:0;
  // Keep the ordinary customer circles quiet in the panorama, readable when nearby.
- const distance=camera.position.distanceTo(a.g.position);a.anchor.style.visibility=(!a.guest||distance<230||selectedIsland===a.island)?'visible':'hidden';
+ const distance=camera.position.distanceTo(a.g.position),near=a.guest?distance<90:distance<115;a.anchor.style.visibility=(near||selectedIsland===a.island)?'visible':'hidden';
  }
  }
  function layout(camera,occupied){
