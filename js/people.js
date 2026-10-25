@@ -1,8 +1,8 @@
 import * as T from 'three';
 import {CSS2DObject} from 'three/addons/CSS2DRenderer.js';
-import {P} from './palette.js?v=20261025111804';
-import {group,box,cyl,ball,mesh,mat} from './primitives.js?v=20261025111804';
-import {shortest} from './world.js?v=20261025111804';
+import {P} from './palette.js?v=20261025165304';
+import {group,box,cyl,ball,mesh,mat} from './primitives.js?v=20261025165304';
+import {shortest} from './world.js?v=20261025165304';
 import {GLTFLoader} from 'three/addons/GLTFLoader.js';
 import {clone as cloneSkinned} from 'three/addons/SkeletonUtils.js';
 // 10/23 熊爸：人太粗糙 → 換成 Kenney Mini Characters（CC0，assets/people/License.txt），內建 idle／walk 動作。
@@ -63,6 +63,8 @@ export function createPeople(scene,walkGraph,{onGuest,onHost,smallScreen,ferry})
  for(const [i,config] of configs.entries()){
  const actor={...human(root,config.style),...config,island:config.home,route:[],segment:0,progress:0,pause:2+i*.8,trip:0,speed:config.guest?1.1+(i%3)*.12:1.18,phase:i*.9};
  dress(actor,config.model);actor.g.position.copy(walkGraph[config.home][0].points[0]);actor.g.rotation.y=.4+i*.6;
+ // 10/25 大巴（熊爸：人物要更有生活感）：轉身慢慢轉、每人走自己的線（不全擠在步道正中間）、停的位置每次略不同
+ actor.face=actor.g.rotation.y;actor.lane=((i*3)%5-2)*.17;actor.off=new T.Vector3();actor.offNow=new T.Vector3();actor.greetAt=-99;
  const anchor=document.createElement('div');anchor.className='npc-anchor';const b=document.createElement('button');b.type='button';b.dataset.npc=config.id;
  if(config.guest){b.className='guest-marker';b.setAttribute('aria-label','查看客人的分享');b.title='客人的分享';b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4V5Z"/><path d="M8 9h8M8 12h5"/></svg>';b.onclick=e=>{e.stopPropagation();onGuest(config.id);};}
  else{b.className='host-marker';b.setAttribute('aria-label',`查看${config.name}的故事`);b.innerHTML=`<img src="${config.logo}" alt="${config.name==='熊爸'?'AC':'ButSoCool'} Logo"><span>${config.name}</span>`;b.onclick=e=>{e.stopPropagation();onHost(config.id);};}
@@ -73,22 +75,26 @@ export function createPeople(scene,walkGraph,{onGuest,onHost,smallScreen,ferry})
  }
  let lastSmall=null;
  function update(dt,now,camera,selectedIsland){
+ // 10/25 大巴：熊爸跟熊老闆走到附近時偶爾停下來面對面打招呼（每 45 秒最多一次）
+ {const [x,y]=[find('bear-dad'),find('bear-boss')];if(x&&y&&x.enabled&&y.enabled&&!x.ride&&!y.ride&&now-x.greetAt>45&&x.g.position.distanceTo(y.g.position)<2.6){for(const [m,o] of [[x,y],[y,x]]){const d=o.g.position.clone().sub(m.g.position);m.face=Math.atan2(d.x,d.z);m.pause=Math.max(m.pause,2.8);m.greetAt=now;m.greeting=true;setTimeout(()=>{m.greeting=false;},2800);}}}
  const small=smallScreen();if(small!==lastSmall){for(const [i,a] of actors.entries()){a.enabled=!a.guest||a.plain||!small||i<5;a.g.visible=a.enabled;a.label.visible=a.enabled;a.marker.hidden=!a.enabled||!!a.plain;a.anchor.style.display=a.enabled?'':'none';}lastSmall=small;}
  for(const a of actors){if(!a.enabled)continue;
  let walking=false;
- if(a.pause>0){a.pause-=dt;if(!a.guest){const guest=actors.find(b=>b.guest&&b.enabled&&b.g.visible&&b.g.position.distanceToSquared(a.g.position)<64);if(guest){const d=guest.g.position.clone().sub(a.g.position);a.g.rotation.y=Math.atan2(d.x,d.z);}}}else{
- if(!a.route.length&&!a.ride){if(!a.plan?.length){const target=a.destinations[a.trip++%a.destinations.length];a.plan=route(a.island,target);a.destination=target;}const leg=a.plan.shift();if(leg?.ferry)a.ride={...leg.ferry,aboard:false,offset:new T.Vector3((Math.random()-.5)*1.4,0,(Math.random()-.5)*2)};else if(leg)a.route=leg.walk;a.segment=0;a.progress=0;}
+ if(a.pause>0){a.pause-=dt;if(!a.guest){const guest=actors.find(b=>b.guest&&b.enabled&&b.g.visible&&b.g.position.distanceToSquared(a.g.position)<64);if(guest&&!a.greeting){const d=guest.g.position.clone().sub(a.g.position);a.face=Math.atan2(d.x,d.z);}}}else{
+ if(!a.route.length&&!a.ride){if(!a.plan?.length){const target=a.destinations[a.trip++%a.destinations.length];a.plan=route(a.island,target);a.destination=target;}const leg=a.plan.shift();if(leg?.ferry)a.ride={...leg.ferry,aboard:false,offset:new T.Vector3((Math.random()-.5)*1.4,0,(Math.random()-.5)*2)};else if(leg){a.route=leg.walk;if(!a.plan.length&&a.route.length>1){const last=a.route.at(-1),ang=(a.trip*2.39+a.phase*1.7)%6.28,r=.45+((a.trip+a.phase*3)%3)*.22;a.route=[...a.route,last.clone().add(new T.Vector3(Math.sin(ang)*r,0,Math.cos(ang)*r))];}}a.segment=0;a.progress=0;}
  if(a.ride&&ferry){const F=ferry.state;if(!a.ride.aboard){if(F.phase==='wait'&&F.from===a.ride.from&&F.t<3)a.ride.aboard=true;}else{const o=a.ride.offset.clone().applyAxisAngle(new T.Vector3(0,1,0),ferry.boat.rotation.y);a.g.position.copy(ferry.boat.position).add(o).setY(ferry.boat.position.y+1.35);if(F.phase==='wait'&&F.from===a.ride.to){a.ride=null;}}}
  let remaining=a.ride?0:dt*a.speed;
  while(remaining>0&&a.segment<a.route.length-1){const A=a.route[a.segment],B=a.route[a.segment+1],length=A.distanceTo(B),available=length-a.progress,step=Math.min(available,remaining);a.progress+=step;remaining-=step;
- a.g.position.lerpVectors(A,B,length?a.progress/length:1);const dir=B.clone().sub(A);if(dir.lengthSq()>.0001)a.g.rotation.y=Math.atan2(dir.x,dir.z);walking=true;
+ a.g.position.lerpVectors(A,B,length?a.progress/length:1);const dir=B.clone().sub(A);if(dir.lengthSq()>.0001){a.face=Math.atan2(dir.x,dir.z);const end=a.segment>=a.route.length-3;a.off.set(-dir.z,0,dir.x).normalize().multiplyScalar(end?0:a.lane);}walking=true;
  if(a.progress>=length-.00001){a.segment++;a.progress=0;}}
- if(a.route.length&&a.segment>=a.route.length-1){a.route=[];if(!a.plan?.length){a.island=a.destination;a.pause=(a.guest?4.5:6)+(a.trip%3);a.g.rotation.y=(activityFacing[a.island]??0)+(a.guest?((a.trip%3)-1)*.16:0);}}
+ if(a.route.length&&a.segment>=a.route.length-1){a.route=[];if(!a.plan?.length){a.island=a.destination;a.pause=(a.guest?4.5:6)+(a.trip%3);a.face=(activityFacing[a.island]??0)+(a.guest?((a.trip%3)-1)*.35:0);}}
  }
+ if(walking){a.offNow.lerp(a.off,Math.min(1,dt*3));a.g.position.add(a.offNow);}
+ {const d=((a.face-a.g.rotation.y+Math.PI)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)-Math.PI;a.g.rotation.y+=d*Math.min(1,dt*(walking?7:4));}
  animate(a,walking,dt,a.speed*.9);
  const swing=walking?Math.sin(now*a.speed*6+a.phase)*.45:0;a.legs[0].rotation.x=swing;a.legs[1].rotation.x=-swing;a.arms[0].rotation.x=-swing*.65;a.arms[1].rotation.x=swing*.65;a.body.position.y=walking?Math.abs(Math.sin(now*a.speed*6+a.phase))*.045:0;
  // Keep the ordinary customer circles quiet in the panorama, readable when nearby.
- const distance=camera.position.distanceTo(a.g.position),near=a.guest?distance<90:distance<115;a.anchor.style.visibility=(near||selectedIsland===a.island)?'visible':'hidden';
+ const distance=camera.position.distanceTo(a.g.position),near=a.guest?distance<55:distance<85;/* 10/25 大巴接 Codex 建議③：全景只留島名；客人圈圈拉近才出現，主角標記中距離才出現 */a.anchor.style.visibility=(near||selectedIsland===a.island)?'visible':'hidden';
  }
  }
  function layout(camera,occupied){

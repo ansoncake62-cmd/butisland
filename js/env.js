@@ -1,16 +1,17 @@
 import * as T from 'three';
-import {P} from './palette.js?v=20261025111804';
-import {mat} from './primitives.js?v=20261025111804';
+import {P} from './palette.js?v=20261025165304';
+import {mat} from './primitives.js?v=20261025165304';
 // ③ 24 小時光線（DESIGN.md §1.2）：關鍵時刻的天色、光色，中間線性內插。
+// 10/25 大巴接 Codex 建議①：白天環境光（hemi）降、地面反光色加深、太陽略增 → 背光面與陰影更明顯，遠看草地／沙灘／石橋不再糊成一片亮色。
 const KEYS=[
  // hour, sky/fog, hemi sky, hemi ground, hemi, sun color, sun, night(0–1)
  [0,'#2B3150','#6B73A6','#4A4462',1.05,'#9FB4E8',.5,1],
  [5,'#3A3B5C','#7676A6','#4F4866',1.05,'#B9B8E0',.5,1],
- [6,'#F2C6C4','#FFD9CF','#B49BB4',1.6,'#FFB78F',1.6,.35],
- [7.5,'#CFE7EE','#FFF0DD','#B49BB4',2.2,'#FFE4C4',2.6,0],
- [12,'#C4E3F0','#FFF8EA','#B9A6BC',2.5,'#FFF2DC',3.2,0],
- [15.5,'#F4DCC0','#FFE8C8','#B9A0B0',2.3,'#FFD49A',3,0],
- [18,'#EDB8A6','#FFC9B0','#A88AA8',1.7,'#FF9C6E',2,.25],
+ [6,'#F2C6C4','#FFD9CF','#9A82A0',1.35,'#FFB78F',1.7,.35],
+ [7.5,'#CFE7EE','#FFF0DD','#8E7899',1.6,'#FFE4C4',3.1,0],
+ [12,'#C4E3F0','#FFF8EA','#927D9B',1.75,'#FFF2DC',3.7,0],
+ [15.5,'#F4DCC0','#FFE8C8','#927A90',1.65,'#FFD49A',3.5,0],
+ [18,'#EDB8A6','#FFC9B0','#8E7290',1.4,'#FF9C6E',2.1,.25],
  [19.5,'#6E5F86','#9C8AB8','#5E5274',1.1,'#C7A6D8',.7,.85],
  [22,'#2E3456','#6F76A8','#4C4664',1.05,'#A4B6E6',.5,1],
  [24,'#2B3150','#6B73A6','#4A4462',1.05,'#9FB4E8',.5,1]];
@@ -33,6 +34,19 @@ export function createEnvironment(scene,{hemi,sun,renderer,sea,lighthouse}){
   fragmentShader:'uniform vec3 top;uniform vec3 horizon;varying float h;void main(){float k=smoothstep(-.01,.16,h);gl_FragColor=vec4(mix(horizon,top,k),1.);}'}));dome.renderOrder=-1;scene.add(dome);
  const starGeo=new T.BufferGeometry(),sp=[];for(let i=0;i<500;i++){const a=Math.random()*Math.PI*2,e=.08+Math.random()*1.4,r=900;sp.push(Math.cos(a)*Math.cos(e)*r,Math.sin(e)*r,Math.sin(a)*Math.cos(e)*r);}starGeo.setAttribute('position',new T.Float32BufferAttribute(sp,3));
  const stars=new T.Points(starGeo,new T.PointsMaterial({color:'#FFF6DA',size:2.2,sizeAttenuation:false,transparent:true,opacity:0,fog:false,depthWrite:false}));scene.add(stars);
+ // 10/25 熊爸「全部都作」④：海面原本一整片平的藍綠色 → 加很淡、慢慢動的水紋明暗＋白天的細碎波光（純 sin 疊加，沒有貼圖，手機也跑得動；晚上波光收掉）
+ const seaU={uTime:{value:0},uDay:{value:1}};
+ sea.material.onBeforeCompile=sh=>{Object.assign(sh.uniforms,seaU);
+  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vSeaP;').replace('#include <begin_vertex>','#include <begin_vertex>\nvSeaP=position.xy;');
+  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vSeaP;uniform float uTime;uniform float uDay;').replace('#include <color_fragment>',`#include <color_fragment>
+   vec2 p=vSeaP;float t=uTime;
+   float w=sin(p.x*.11+t*.55)*sin(p.y*.09-t*.4)+.6*sin((p.x+p.y)*.06+t*.3)+.35*sin((p.x-p.y)*.17-t*.7);
+   diffuseColor.rgb*=1.+.035*w*(1.-smoothstep(150.,420.,length(vViewPosition)));
+   vec2 q=p+vec2(w*4.,-w*3.);
+   float g=sin(q.x*.9-q.y*.7+t*1.6)*sin(q.x*.6+q.y*.8-t*1.3);
+   float s=smoothstep(.9,1.,g)*smoothstep(1.,1.7,w+.35*sin(p.x*.05-p.y*.03-t*.2))*(1.-smoothstep(150.,420.,length(vViewPosition)));
+   diffuseColor.rgb+=vec3(.20,.24,.24)*s*.5*uDay;`);};
+ sea.material.needsUpdate=true;
  let current=null;
  function apply(hour){const s=sample(hour);current={hour,...s};
  scene.background.copy(s.sky);scene.fog.color.copy(s.sky);renderer.setClearColor(s.sky);dome.material.uniforms.top.value.copy(s.top);dome.material.uniforms.horizon.value.copy(s.sky);stars.material.opacity=Math.max(0,s.night-.3)/.7;
@@ -43,7 +57,8 @@ export function createEnvironment(scene,{hemi,sun,renderer,sea,lighthouse}){
  renderer.shadowMap.needsUpdate=true;
  for(const m of glow){m.emissive.set(P.lamp);m.emissiveIntensity=s.night*.9;}
  sea.material.color.copy(new T.Color(P.deepSea).lerp(new T.Color('#2D4D6E'),s.night*.75));
+ seaU.uDay.value=1-s.night;
  if(beam)beam.material.opacity=s.night*.28;
  return s;}
- return {apply,update(dt){if(beam&&current?.night>.2)beam.userData.pivot.rotation.y+=dt*1.2;},get:()=>current};
+ return {apply,update(dt){seaU.uTime.value+=dt;if(beam&&current?.night>.2)beam.userData.pivot.rotation.y+=dt*1.2;},get:()=>current};
 }

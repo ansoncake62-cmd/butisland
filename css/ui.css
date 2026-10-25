@@ -66,16 +66,20 @@ body[data-night="1"] .intro-note,body[data-night="1"] .map-footer{color:#fbf4e8}
 .dock .clock,.dock .saleline-wrap{transition:width .3s}
 .dock.collapsed{width:auto!important}.dock.collapsed .track,.dock.collapsed .saleline-wrap{display:none}.dock.collapsed .clock{width:auto;padding-right:8px}
 @media(max-width:600px){.dock.collapsed{left:auto;right:14px;transform:none}}
-.dog-tag{pointer-events:auto;transform:translateY(-4px);font-size:10px;font-weight:750;padding:2px 7px;border-radius:11px;background:#fbf4e8e8;border:1.5px solid var(--pink);color:var(--coffee);box-shadow:0 2px 7px #394f3e26;white-space:nowrap}
+/* 10/25 狗牌跟主角標記同一套尺寸：同高的膠囊、同字級、左邊一個圖示位 */
+.dog-tag{pointer-events:auto;transform:translateY(-5px);display:flex;align-items:center;gap:5px;min-height:30px;font-size:11px;font-weight:750;padding:2px 9px 2px 4px;border-radius:22px;background:var(--cream);border:1.5px solid var(--pink);color:var(--coffee);box-shadow:0 2px 7px #394f3e26;white-space:nowrap}
+.dog-tag::before{content:'🐾';display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#ebb4c433;font-size:11px}
 /* 10/23 拉近時標籤縮成小圓點（scene.js placeLabels 切 body.labels-compact） */
 .labels-compact .island-label:not(:hover):not(.peek):not(.selected){padding:3px;gap:0;min-height:0;opacity:.92}
 .labels-compact .island-label:not(:hover):not(.peek):not(.selected) span{display:none}
 .labels-compact .host-marker:not(:hover):not(.peek){padding:3px;gap:0;min-height:0}
 .labels-compact .host-marker:not(:hover):not(.peek) span{display:none}
-.labels-compact .dog-tag:not(:hover):not(.peek){font-size:0;width:18px;height:18px;padding:0;display:grid;place-items:center}
-.labels-compact .dog-tag:not(:hover):not(.peek)::before{content:'🐾';font-size:9px}
+.labels-compact .dog-tag:not(:hover):not(.peek){font-size:0;gap:0;min-height:0;padding:3px}
+.labels-compact .dog-tag:not(:hover):not(.peek)::before{font-size:11px}
 .intro-note{transition:opacity .3s}.labels-compact .intro-note{opacity:0;pointer-events:none}
 
 /* Landscape first: names remain readable, while people and dog badges sit one level below island labels. */
 .host-marker{min-height:30px;font-size:11px;gap:5px;padding:2px 8px 2px 3px;border-width:1.5px;box-shadow:0 2px 7px #394f3e26}.host-marker img{width:22px;height:22px}.guest-marker{width:24px;height:24px;padding:4px;border-width:1.5px;box-shadow:0 2px 7px #394f3e26}.guest-marker svg{width:15px;height:15px}
-@media(max-width:600px){.island-label{font-size:13px;min-height:36px;padding:5px 9px 5px 5px}.island-label b{width:21px;height:21px}.host-marker{font-size:10px}.host-marker img{width:20px;height:20px}.guest-marker{width:23px;height:23px}.dog-tag{font-size:9px;padding:2px 6px}}
+@media(max-width:600px){.island-label{font-size:13px;min-height:36px;padding:5px 9px 5px 5px}.island-label b{width:21px;height:21px}.host-marker{font-size:10px}.host-marker img{width:20px;height:20px}.guest-marker{width:23px;height:23px}.dog-tag{font-size:10px}.dog-tag::before{width:20px;height:20px}}
+/* 10/25 熊爸「全部都作」③：開團廣場「開團資料・待補」深色看板在全景很搶眼 → 全景藏起來，拉近（labels-compact）或點進開團廣場才出現 */
+body:not(.labels-compact) .model-sign.market-sign{visibility:hidden}

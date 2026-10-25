@@ -1,7 +1,12 @@
 import * as T from 'three';
-import {P} from './palette.js?v=20261025111804';
+import {P} from './palette.js?v=20261025165304';
 const materials=new Map(), geometries=new Map();
 export function mat(color,extra={}){const key=color+JSON.stringify(extra);if(!materials.has(key))materials.set(key,new T.MeshStandardMaterial({color,roughness:.88,flatShading:true,...extra}));return materials.get(key);}
+// 10/25 接觸陰影：建築底部、樹下鋪一片柔邊深色圓（像環境光遮蔽），遠看物件才「站」在地上。
+let shadowTex=null;const shadowMat=()=>{if(!shadowTex){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),gr=x.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(.55,'rgba(0,0,0,.55)');gr.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=gr;x.fillRect(0,0,64,64);shadowTex=new T.CanvasTexture(c);}
+ return new T.MeshBasicMaterial({color:'#3B3046',alphaMap:shadowTex,transparent:true,opacity:.5,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2});};
+let contactMat=null;
+export function contact(parent,x,z,w,d=w,y=.3,opacity){if(!contactMat)contactMat=shadowMat();const m=new T.Mesh(new T.PlaneGeometry(w,d),opacity==null?contactMat:Object.assign(contactMat.clone(),{opacity}));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);m.renderOrder=1;parent.add(m);return m;}
 export function group(parent,x=0,y=0,z=0){const g=new T.Group();g.position.set(x,y,z);parent.add(g);return g;}
 export function mesh(parent,geo,color,x=0,y=0,z=0,extra={}){const m=new T.Mesh(geo,mat(color,extra));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
 export function box(parent,w,h,d,color,x=0,y=0,z=0){const k=`b${w},${h},${d}`;if(!geometries.has(k))geometries.set(k,new T.BoxGeometry(w,h,d));return mesh(parent,geometries.get(k),color,x,y,z);}
@@ -25,8 +30,11 @@ export function path(parent,a,b,width=1.6,color=P.cobble){const dx=b[0]-a[0],dz=
   const stone=cyl(parent,.27+Math.abs(h)*.06,.1,Math.abs(h)>.5?P.cobble:P.cobbleDark,a[0]+ux*t-uz*o,.35,a[1]+uz*t+ux*o,6);stone.rotation.y=h*3;}
  return null;}
 // 10/23 熊老闆指定的樹形：多面切角的球疊成樹冠，分岔彎曲的粉紫樹幹。
-export function tree(parent,x,z,scale=1,eucalyptus=false){const g=group(parent,x,0,z);g.scale.setScalar(scale);g.rotation.y=(x*7.3+z*3.1)%6.28;const bark=P.bark,leaves=eucalyptus?[P.sage,P.leafLight]:[P.leaf,P.leafLight];
- line(g,[0,0,0],[.18,1.35,0],bark,.2);line(g,[.18,1.35,0],[-.05,2.4,.08],bark,.16);line(g,[.12,1.75,0],[-.85,2.75,.2],bark,.1);line(g,[.08,2,0],[.9,2.95,-.2],bark,.1);
+// 10/25 大巴（熊爸：樹全部同一種奶黃色圓球、像複製貼上）→ 依座標固定抽一種葉色＋大小高矮，每次載入都一樣
+const FOLIAGE=[[P.leaf,P.leafLight],['#B9C77F','#D2DBA3'],['#E9BC86','#F3D5AE'],[P.leaf,'#F2D99A']];
+const hash=(x,z,k=0)=>{const v=Math.sin(x*12.9898+z*78.233+k*37.719)*43758.5453;return v-Math.floor(v);};
+export function tree(parent,x,z,scale=1,eucalyptus=false){const g=group(parent,x,0,z),h0=hash(x,z),h1=hash(x,z,1),h2=hash(x,z,2);scale*=.82+h1*.36;g.scale.set(scale,scale*(.9+h2*.32),scale);g.rotation.y=(x*7.3+z*3.1)%6.28;const bark=P.bark,leaves=eucalyptus?['#B9C77F',P.leafLight]:FOLIAGE[h0<.42?0:h0<.72?1:h0<.9?2:3];
+ contact(g,0,0,3.4,3.4,.31);line(g,[0,0,0],[.18,1.35,0],bark,.2);line(g,[.18,1.35,0],[-.05,2.4,.08],bark,.16);line(g,[.12,1.75,0],[-.85,2.75,.2],bark,.1);line(g,[.08,2,0],[.9,2.95,-.2],bark,.1);
  for(const [bx,by,bz,r,k] of [[-.9,3.15,.2,.95,0],[.95,3.3,-.2,1,1],[0,3.85,0,1.15,0],[.25,3.05,.75,.75,1],[-.3,3.3,-.75,.72,1]])ball(g,r,leaves[k],bx,by,bz);return g;}
 export function plant(parent,x,z,color=P.pink){const g=group(parent,x,0,z);cyl(g,.25,.5,P.terra,0,.25,0,8,.32);for(let i=0;i<3;i++){line(g,[0,.4,0],[Math.sin(i*2)*.2,.9,Math.cos(i*2)*.2],P.grassDark,.035);ball(g,.16,color,Math.sin(i*2)*.2,.92,Math.cos(i*2)*.2);}return g;}
 export function bench(parent,x,z,rotation=0){const g=group(parent,x,0,z);g.rotation.y=rotation;box(g,1.8,.15,.65,P.wood,0,.65,0);box(g,1.8,.65,.12,P.darkWood,0,1.05,-.3);for(const dx of [-.65,.65])box(g,.12,.65,.5,P.darkWood,dx,.3,0);return g;}

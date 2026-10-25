@@ -1,5 +1,5 @@
-import {display,escapeHTML as esc,validLink} from './content.js?v=20261025111804';
-import {CREATURES} from './creatures.js?v=20261025111804';
+import {display,escapeHTML as esc,validLink} from './content.js?v=20261025165304';
+import {CREATURES} from './creatures.js?v=20261025165304';
 const $=s=>document.querySelector(s);
 export function createStories(profiles,testimonials,links){
  function action(id){const l=links[id];if(!l)return '';return validLink(l.url)?`<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.label)} ↗</a>`:`<button disabled>${esc(l.label)}・待補</button>`;}

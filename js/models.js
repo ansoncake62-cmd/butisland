@@ -1,7 +1,7 @@
 import * as T from 'three';
-import {P} from './palette.js?v=20261025111804';
-import {terrain} from './coast.js?v=20261025111804';
-import {group,box,cyl,ball,line,roof,spire,path,tree,plant,bench,windowPane,fence,umbrella,board} from './primitives.js?v=20261025111804';
+import {P} from './palette.js?v=20261025165304';
+import {terrain} from './coast.js?v=20261025165304';
+import {group,box,cyl,ball,line,roof,spire,path,tree,plant,bench,windowPane,fence,umbrella,board,contact} from './primitives.js?v=20261025165304';
 export function islandBase(parent,r,height,color,seed=0,options={}){return terrain(parent,r,color,seed,options);}
 
 // 10/23 熊爸選 B：熊爸家改成參考影片那種小城堡——石牆主館＋魚鱗瓦階梯山牆、兩座圓塔尖頂、一座方塔城垛。
@@ -39,7 +39,7 @@ function stoneRelief(parent,url,x,y,z,size,sunken=false){const p=group(parent,x,
   const layers=sunken?[['#EFE7F0',.014,-.014],['#8A7E92',0,0],['#6E6378',-.008,.008]]:shades.map((col,k)=>[col,-.012*(4-k),-.012*(4-k)]);
   layers.forEach(([col,dx,dy],k)=>{const m=new T.Mesh(geo,new T.MeshLambertMaterial({map:tex,color:col,transparent:true,alphaTest:.4}));m.position.set(dx,dy,k*.004+(sunken?.005:k*.01));p.add(m);});};
  img.src=url;return p;}
-function house(g,x,z,scale=1){const h=group(g,x,0,z);h.scale.setScalar(scale);const H=5.4;
+function house(g,x,z,scale=1){const h=group(g,x,0,z);h.scale.setScalar(scale);const H=5.4;contact(h,0,0,9.5,7.5,.29,.45);
  cyl(h,3.3,.3,P.wallDark,0,.3,0,10).scale.set(1.15,1,.85);
  box(h,4.6,H,3.4,P.wall,0,.3+H/2,0);for(let i=0;i<8;i++)if(i!==4)box(h,4.65,.05,3.45,P.wallDark,0,.9+i*.62,0);
  box(h,4.85,.22,3.65,P.wallDark,0,3.2,0);box(h,4.8,.18,3.6,P.wallDark,0,.3+H,0);
@@ -61,8 +61,14 @@ export function home(g){house(g,.6,-4.8,2.15);tree(g,-4.6,2.8,1.1,true);tree(g,5
  cyl(g,2.3,.06,P.sea,15.5,.35,-4.5,28);cyl(g,2.55,.04,'#E3CDA6',15.5,.33,-4.5,28);for(let i=0;i<8;i++)ball(g,.24+(i%3)*.07,P.cliff,15.5+Math.cos(i*.8)*2.5,.4,-4.5+Math.sin(i*.8)*2.5);
  cyl(g,.35,.18,P.pink,1,.4,2,12);ball(g,.21,P.mustard,-2,.5,3.5);box(g,.5,.75,.45,P.terra,5,.65,5);cyl(g,.07,1,P.darkWood,5,.6,5,6);
  for(let i=0;i<4;i++)plant(g,-2.5+i*.7,1,P.pink);
- board(g,0,6.6);bench(g,-11.5,-4,1.2);return {};
+ board(g,-2.7,6.4);bench(g,-11.5,-4,1.2);return {};   // 10/25 熊爸：告示牌擋在城堡大門前步道正中間 → 移到步道左側草地
 }
+// 10/25 大巴（熊爸：各島要有個性，遮住島名也認得出用途）→ 每島加幾個一看就懂的小道具，不擋步道
+function crate(g,x,z,fruit,rot=0){const c=group(g,x,0,z);c.rotation.y=rot;box(c,1,.5,.7,P.wood,0,.6,0);box(c,1.04,.08,.74,P.darkWood,0,.86,0);for(let i=0;i<4;i++)ball(c,.17,fruit,-.3+i*.2,.95,(i%2-.5)*.25);return c;}
+function bunting(g,a,b,y,colors){const n=Math.max(4,Math.round(Math.hypot(b[0]-a[0],b[1]-a[1])/.7));line(g,[a[0],y,a[1]],[b[0],y,b[1]],P.darkWood,.025);for(let i=1;i<n;i++){const t=i/n,f=box(g,.32,.38,.03,colors[i%colors.length],a[0]+(b[0]-a[0])*t,y-.24,a[1]+(b[1]-a[1])*t);f.rotation.y=Math.atan2(b[0]-a[0],b[1]-a[1])+Math.PI/2;f.rotation.z=Math.PI/4;f.scale.y=.75;}}
+function bookPile(g,x,z,n=4){const b=group(g,x,0,z);for(let i=0;i<n;i++){const k=box(b,.62-(i%2)*.08,.13,.45,[P.pink,P.sage,P.mustard,P.terra,P.cream][i%5],0,.42+i*.13,0);k.rotation.y=(i%3-1)*.25;}return b;}
+function hay(g,x,z,rot=0){const h=cyl(g,.55,1,P.mustard,x,.9,z,10);h.rotation.z=Math.PI/2;h.rotation.y=rot;return h;}
+function chicken(g,x,z,rot=0){const c=group(g,x,0,z);c.rotation.y=rot;ball(c,.24,P.cream,0,.6,0,1,.9,1.2);ball(c,.15,P.cream,0,.88,.2);box(c,.06,.1,.1,'#D9534F',0,1.04,.22);box(c,.08,.05,.12,P.mustard,0,.86,.36);return c;}
 function marketStall(g,x,z,color){const s=group(g,x,0,z);box(s,2.6,1.15,1.2,P.wood,0,.8,0);for(const a of [-1.25,1.25])box(s,.1,2.6,.1,P.darkWood,a,1.55,0);for(let i=0;i<8;i++){box(s,.36,.12,2,i%2?P.cream:color,-1.25+i*.36,2.9,0);box(s,.36,.45,.07,i%2?P.cream:color,-1.25+i*.36,2.62,1);}
  for(let i=0;i<3;i++){box(s,.6,.25,.55,i===1?P.pink:P.cream,-.8+i*.8,1.52,0);ball(s,.13,P.mustard,-.9+i*.85,2.45,.6);}return s;
 }
@@ -75,7 +81,8 @@ export function market(g){
  line(g,[-5.5,3.8,-1.2],[5.6,3.8,-1.2],P.darkWood,.035);for(let i=0;i<7;i++){const x=-5+i*1.65;ball(g,.27,P.terra,x,3.4,-1.2,.8,1.2,.8);cyl(g,.14,.08,P.mustard,x,3.08,-1.2,6);}
  scooter(g,-5.4,-.7);scooter(g,-4.6,-.7);board(g,1,0);
  for(let i=0;i<4;i++)box(g,1.1,.55,.75,P.cream,5.7,.6+(i%2)*.56,4.5-Math.floor(i/2)*.9);
- for(const x of [-6,6])plant(g,x,1,P.mustard);tree(g,-6,4.8,.55);return {sign:[1,2.2,.13]};
+ for(const x of [-6,6])plant(g,x,1,P.mustard);tree(g,-6,4.8,.55);
+ for(const x of [-6.2,6.2])cyl(g,.07,3.4,P.darkWood,x,1.9,5.6,6);bunting(g,[-6.2,5.6],[6.2,5.6],3.45,[P.terra,P.mustard,P.sage,P.pink,P.cream]);crate(g,-2.2,3.2,'#E06A4E',.2);crate(g,2,4.6,P.mustard,-.15);crate(g,5.9,2.6,'#9DBF5A',.4);return {sign:[1,2.2,.13]};
 }
 export function farm(g){
  cyl(g,2.7,.1,'#BDAD7E',-3,.34,2.2,18);fence(g,[-6,-5],[6,-5]);fence(g,[-6,-5],[-6,4]);fence(g,[6,-5],[6,4]);fence(g,[-6,4],[-2,4]);fence(g,[2,4],[6,4]);fence(g,[0,-5],[0,-1]);
@@ -84,6 +91,7 @@ export function farm(g){
  tree(g,5.3,1.8,.75);box(g,1.8,.4,.8,'#C1D2CF',2.5,.55,2.7);box(g,1.5,.4,.5,P.sea,2.5,.72,2.7);
  for(let i=0;i<3;i++){const h=cyl(g,.55,1.2,P.mustard,-5+i*.9,.9,0,10);h.rotation.z=Math.PI/2;}
  const coop=group(g,-2,0,5.7);box(coop,1.6,1.2,1.5,P.wood,0,1,0);roof(coop,2,1.9,.7,P.terra,0,1.6,0);box(coop,.5,.7,.1,P.coffee,0,.8,.8);
+ hay(g,4.6,-4.1,.3);hay(g,4.9,-3,-.2);cyl(g,.22,.75,'#C9D2D0',-.9,.72,2.9,10);cyl(g,.22,.75,'#C9D2D0',-.45,.72,3.2,10);chicken(g,-1.1,6.6,.6);chicken(g,-3,6.9,-.8);chicken(g,-.4,7.3,2.4);
  board(g,0,5.5);for(let i=0;i<10;i++){const a=i*2.4;ball(g,.25,P.grassDark,Math.sin(a)*6,.4,Math.cos(a)*6,1,.4,1);}return {};
 }
 export function kitchen(g){
@@ -97,12 +105,15 @@ export function kitchen(g){
  box(g,4.5,1.25,.9,P.wood,0,1.1,-3.2);box(g,1.5,1,.95,P.coffee,1.2,1.2,-3.2);windowPane(g,1.2,1.2,-2.68,1,.6);
  line(g,[-2.6,3.4,-3], [2.6,3.4,-3],P.darkWood,.055);for(let i=0;i<4;i++){const pan=cyl(g,.35,.12,P.coffee,-1.8+i,2.9,-3,12);pan.rotation.x=Math.PI/2;line(g,[-1.8+i,3.1,-3],[-1.8+i,3.55,-3],P.ink,.04);}
  for(let i=0;i<5;i++)cyl(g,.15,.3,[P.terra,P.mustard,P.sage][i%3],-2+i*.4,1.9,-3.2,8);
- for(const x of [-5,-3.5,-2,2,3.5,5])plant(g,x,5.4,P.sage);bench(g,-4,2,.5);box(g,1.7,.55,1.7,P.terra,4.7,.65,4.6);for(let i=0;i<4;i++)ball(g,.3,P.sage,4.2+(i%2)*.8,1.1,4.2+Math.floor(i/2)*.8);return {};
+ for(const x of [-5,-3.5,-2,2,3.5,5])plant(g,x,5.4,P.sage);bench(g,-4,2,.5);box(g,1.7,.55,1.7,P.terra,4.7,.65,4.6);for(let i=0;i<4;i++)ball(g,.3,P.sage,4.2+(i%2)*.8,1.1,4.2+Math.floor(i/2)*.8);
+ {const oven=group(g,5.3,0,-1.4);box(oven,2,.9,1.8,P.cobbleDark,0,.8,0);ball(oven,.95,P.terra,0,1.25,0,1,.8,1);box(oven,.55,.5,.2,P.ink,0,1.45,.86);cyl(oven,.18,1.2,P.terra,.45,2.3,-.35,8);}
+ {const sg=group(g,-5.6,0,-.6);sg.rotation.y=.5;cyl(sg,.09,2.6,P.darkWood,0,1.6,0,6);const plate=cyl(sg,.85,.12,P.cream,0,3.4,.05,18);plate.rotation.x=Math.PI/2;const rim=cyl(sg,.95,.08,P.terra,0,3.4,0,18);rim.rotation.x=Math.PI/2;box(sg,.09,1,.06,P.coffee,-.28,3.3,.15);for(const d of [-.1,0,.1])box(sg,.035,.32,.06,P.coffee,-.28+d,3.95,.15);box(sg,.09,.75,.06,P.coffee,.28,3.18,.15);ball(sg,.17,P.coffee,.28,3.75,.15,1,1.35,.35);}
+ crate(g,-5,3.6,'#E06A4E',.3);return {};
 }
 export function library(g,posts=0){
  for(let i=0;i<5;i++)box(g,3,.12,1,i%2?P.cobble:P.cobbleDark,0,.39+i*.05,5.1-i*.9);
  // 10/23 熊爸：知識圖書館做得像參考影片裡的教堂——高石牆、陡魚鱗瓦屋頂、階梯山牆、尖拱長窗、玫瑰窗、扶壁、山牆頂小鐘樓。
- const h=group(g,-1,0,-2.2);box(h,4.2,4.6,5.6,P.wall,0,2.6,0);for(let i=0;i<6;i++)box(h,4.25,.05,5.65,P.wallDark,0,.9+i*.75,0);roof(h,4.9,6.2,3.1,P.coffee,0,4.9,0);
+ const h=group(g,-1,0,-2.2);contact(h,0,0,7,8.5,.31,.42);box(h,4.2,4.6,5.6,P.wall,0,2.6,0);for(let i=0;i<6;i++)box(h,4.25,.05,5.65,P.wallDark,0,.9+i*.75,0);roof(h,4.9,6.2,3.1,P.coffee,0,4.9,0);
  box(h,1.2,2.3,.14,P.coffee,0,1.45,2.82);const door=cyl(h,.6,.14,P.coffee,0,2.6,2.82,10);door.rotation.x=Math.PI/2;box(h,1.7,.25,.3,P.wallDark,0,3.25,2.86);
  const rose=cyl(h,.62,.16,P.wallDark,0,4.15,2.82,12);rose.rotation.x=Math.PI/2;const roseGlass=cyl(h,.48,.18,P.glass,0,4.15,2.84,12);roseGlass.rotation.x=Math.PI/2;for(let i=0;i<4;i++){const spoke=box(h,.9,.05,.2,P.wallDark,0,4.15,2.9);spoke.rotation.z=i*Math.PI/4;}
  for(const sd of [-1,1]){for(const z of [-1.8,0,1.8]){const w=windowPane(h,sd*2.12,2.9,z,.55,1.5);w.parent.children.slice(-6).forEach(m=>{m.rotation.y=sd*Math.PI/2;});}for(const z of [-2.7,-.9,.9,2.7])box(h,.45,3.4,.5,P.wallDark,sd*2.25,1.9,z);}
@@ -111,12 +122,20 @@ export function library(g,posts=0){
  const tower=group(g,3.6,0,-2);const levels=Math.max(3,Math.ceil(posts/5));for(let j=0;j<levels;j++){box(tower,2.3,.15,1.2,P.darkWood,0,.5+j*1.1,0);for(let i=0;i<7;i++){const book=box(tower,.21,.55+(i%3)*.12,.65,[P.pink,P.sage,P.mustard,P.cream,P.terra][i%5],-.9+i*.3,.85+j*1.1,0);book.rotation.z=(i%3-1)*.08;}}for(const x of [-1.13,1.13])box(tower,.13,levels*1.1,.95,P.darkWood,x,levels*.55+.4,0);
  spire(tower,1.35,2.2,0,levels*1.1+.45,0);bench(g,-4.5,3.6,.3);tree(g,-5.4,-2,.65);tree(g,5.7,2.5,.65);board(g,2.5,4.7);
  cyl(g,.08,3.6,P.coffee,-3,1.8,4,8);ball(g,.32,P.lamp,-3,3.6,4);for(let i=0;i<3;i++){const b=box(g,1,.12,.65,[P.pink,P.sage,P.mustard][i],-1+i,.5,3);b.rotation.y=i*.5;}
- for(let i=0;i<4;i++)plant(g,-4.5+i*.75,-5,P.pink);return {};
+ for(let i=0;i<4;i++)plant(g,-4.5+i*.75,-5,P.pink);
+ box(g,2.4,.05,1.7,P.pink,-4.7,.36,1.6);ball(g,.45,P.sage,-5.4,.65,1.3,1,.7,1);ball(g,.45,P.mustard,-4,.65,1.2,1,.7,1);bookPile(g,-3.7,2.3,5);bookPile(g,-5.6,2.4,3);
+ {const cart=group(g,4.6,0,.9);cart.rotation.y=-.4;box(cart,1.6,.12,.7,P.darkWood,0,.75,0);box(cart,1.6,.12,.7,P.darkWood,0,1.35,0);for(const x of [-.75,.75])box(cart,.08,1.2,.7,P.darkWood,x,1.05,0);for(let i=0;i<5;i++)box(cart,.2,.45,.5,[P.pink,P.sage,P.mustard,P.cream,P.terra][i],-.5+i*.25,1.05,0);for(const x of [-.6,.6]){const w=cyl(cart,.18,.08,P.ink,x,.25,.38,10);w.rotation.x=Math.PI/2;}}
+ return {};
 }
 export function help(g){
  // The support island shares the organic terrain; its beach is part of the coast.
  const lighthouse=group(g,2,0,-1.5);cyl(lighthouse,1,4.7,P.cream,0,2.6,0,12,1.35);cyl(lighthouse,1.2,.35,P.terra,0,4.75,0,12);cyl(lighthouse,.84,.9,'#C0D3CA',0,5.35,0,12);for(let i=0;i<6;i++){const a=i*Math.PI/3;cyl(lighthouse,.05,1,P.coffee,Math.sin(a)*.85,5.35,Math.cos(a)*.85,6);}cyl(lighthouse,.05,.85,P.terra,0,6.15,0,12,1.35);cyl(lighthouse,1.38,.13,P.cream,0,5.83,0,12);
  const hut=group(g,-2,0,-.7);box(hut,2.7,2.2,2.6,P.wall,0,1.45,0);roof(hut,3.4,3.3,.85,P.coffee,0,2.6,0);box(hut,1.8,.7,.15,P.coffee,0,2.1,1.4);windowPane(hut,0,1.25,1.4,1.8,.7);
- umbrella(g,1.5,3.2,P.pink);bench(g,.2,4.3);for(let i=0;i<5;i++){const a=i*2.4;ball(g,.4,P.cliffDark,Math.sin(a)*5.7,.55,Math.cos(a)*5.7,1,.6,.8);}board(g,-3,3);plant(g,-3,-2,P.mustard);return {sign:[-2,2.1,.88]};
+ umbrella(g,1.5,3.2,P.pink);bench(g,.2,4.3);for(let i=0;i<5;i++){const a=i*2.4;ball(g,.4,P.cliffDark,Math.sin(a)*5.7,.55,Math.cos(a)*5.7,1,.6,.8);}board(g,-3,3);plant(g,-3,-2,P.mustard);
+ {const mb=group(g,.6,0,1.9);cyl(mb,.06,1.1,P.darkWood,0,.9,0,6);box(mb,.55,.45,.75,P.terra,0,1.6,0);box(mb,.45,.06,.08,P.cream,0,1.86,.38);}
+ for(let i=0;i<4;i++)box(g,.7-(i%2)*.15,.5,.6,i%2?'#D9B98C':P.wood,-3.9+(i%2)*.2,.6+Math.floor(i/2)*.5,1.2+(i%2?.05:0)*(i<2?1:-1));
+ {const ring=cyl(g,.42,.12,P.terra,-.62,1.5,-.4,14);ring.rotation.z=Math.PI/2;cyl(g,.25,.14,P.cream,-.6,1.5,-.4,12).rotation.z=Math.PI/2;}
+ for(const z of [4.6,5.6])cyl(g,.17,.8,P.darkWood,3.6,.7,z,8);
+ return {sign:[-2,2.1,.88]};
 }
 export const builders={home,market,farm,kitchen,library,help};

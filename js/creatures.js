@@ -1,9 +1,9 @@
 import * as T from 'three';
-import {P} from './palette.js?v=20261025111804';
-import {createDog} from './dogs.js?v=20261025111804';
-import {group,box,cyl,ball,line} from './primitives.js?v=20261025111804';
-import {coastRadius} from './coast.js?v=20261025111804';
-import {human,dress,animate} from './people.js?v=20261025111804';
+import {P} from './palette.js?v=20261025165304';
+import {createDog} from './dogs.js?v=20261025165304';
+import {group,box,cyl,ball,line} from './primitives.js?v=20261025165304';
+import {coastRadius} from './coast.js?v=20261025165304';
+import {human,dress,animate} from './people.js?v=20261025165304';
 import {CSS2DObject} from 'three/addons/CSS2DRenderer.js';
 // ② 動物、狗、廚師與墨爾本電車。座標都是各島的本地座標（島中心為原點，+z 朝南）。
 const rand=(a,b)=>a+Math.random()*(b-a);

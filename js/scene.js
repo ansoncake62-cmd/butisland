@@ -1,15 +1,15 @@
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/OrbitControls.js';
 import {CSS2DRenderer,CSS2DObject} from 'three/addons/CSS2DRenderer.js';
-import {P} from './palette.js?v=20261025111804';
-import {R,axial,BRIDGES} from './world.js?v=20261025111804';
-import {group,box,cyl,ball,line,path,tree,umbrella,mat,roof} from './primitives.js?v=20261025111804';
-import {islandBase,builders} from './models.js?v=20261025111804';
-import {coastRadius,coastline,coastBand,surface,bulges} from './coast.js?v=20261025111804';
-import {createPeople} from './people.js?v=20261025111804';
-import {buildTrack,createCreatures} from './creatures.js?v=20261025111804';
-import {batchScenery} from './static-scene.js?v=20261025111804';
-import {createEnvironment} from './env.js?v=20261025111804';
+import {P} from './palette.js?v=20261025165304';
+import {R,axial,BRIDGES} from './world.js?v=20261025165304';
+import {group,box,cyl,ball,line,path,tree,umbrella,mat,roof} from './primitives.js?v=20261025165304';
+import {islandBase,builders} from './models.js?v=20261025165304';
+import {coastRadius,coastline,coastBand,surface,bulges,islet} from './coast.js?v=20261025165304';
+import {createPeople} from './people.js?v=20261025165304';
+import {buildTrack,createCreatures} from './creatures.js?v=20261025165304';
+import {batchScenery} from './static-scene.js?v=20261025165304';
+import {createEnvironment} from './env.js?v=20261025165304';
 export function createScene(data,onSelect,onGuest,onHost,onCreature){
  const stage=document.querySelector('#stage'),labelRoot=document.querySelector('#labels');
  const mobile=()=>innerWidth<=600;
@@ -72,16 +72,18 @@ export function createScene(data,onSelect,onGuest,onHost,onCreature){
  const docks={};dock('market');dock('help');
  // Bay shores remain distant and hazy; decoration is never clickable.
  const distance=group(scene,0,-4,0);
- for(let i=0;i<18;i++){const a=Math.PI*.96+i*Math.PI/18,r=300+(i%3)*25,x=Math.cos(a)*r,z=Math.sin(a)*r-35;ball(distance,30,P.grassDark,x,1,z,1.3,.22,1);for(let j=0;j<4;j++)tree(distance,x-12+j*7,z+Math.sin(j*3)*7,.8+(i%3)*.2,true);if(i%4===0){box(distance,2.7,2,2.7,P.cream,x,4,z+12);const top=cyl(distance,2.1,1.8,P.terra,x,5.8,z+12,4,0);top.rotation.y=Math.PI/4;}}
+ // 10/25 熊爸「全部都作」①：遠方綠地原本是 20 面體低多邊形，跟圓滑的島打架 → 改平滑球面（不平塗）；遠景再靠霧氣淡出
+ const blobGeo=new T.SphereGeometry(1,48,20),blobMats=new Map(),blob=(parent,r,color,x,y,z,sx,sy,sz)=>{if(!blobMats.has(color))blobMats.set(color,new T.MeshStandardMaterial({color,roughness:.95,flatShading:false}));const m=new T.Mesh(blobGeo,blobMats.get(color));m.position.set(x,y,z);m.scale.set(r*sx,r*sy,r*sz);m.receiveShadow=true;parent.add(m);return m;};
+ for(let i=0;i<18;i++){const a=Math.PI*.96+i*Math.PI/18,r=300+(i%3)*25,x=Math.cos(a)*r,z=Math.sin(a)*r-35;blob(distance,30,P.grassDark,x,1,z,1.3,.22,1);for(let j=0;j<4;j++)tree(distance,x-12+j*7,z+Math.sin(j*3)*7,.8+(i%3)*.2,true);if(i%4===0){box(distance,2.7,2,2.7,P.cream,x,4,z+12);const top=cyl(distance,2.1,1.8,P.terra,x,5.8,z+12,4,0);top.rotation.y=Math.PI/4;}}
  // Small sand-and-grass islands, beach umbrellas, rock seals and distant windmill.
  const decorations=[[-55,31,4],[-43,-45,4.5],[71,35,4.5],[104,-28,3],[-72,-8,2.2],[55,-64,3.6]];
- for(const [x0,z0,r] of decorations){const x=x0*1.3,z=z0*1.3,g=group(scene,x,-3.5,z);const shore=coastline(r,x*.1);const ground=new T.Mesh(surface(shore,.55),new T.MeshStandardMaterial({color:P.grass}));g.add(ground);const sand=new T.Mesh(coastBand(shore,1,1.2,.55,.05),new T.MeshStandardMaterial({color:'#DDCEAC',side:T.DoubleSide}));g.add(sand);if(x===-55){for(let i=0;i<3;i++)umbrella(g,-1.6+i*1.6,0,[P.pink,P.mustard,P.sage][i]);}else if(x===-43&&z===-45){cyl(g,.55,3,P.cream,0,2,0,8,1);const rotor=group(g,0,3,-.7);for(let i=0;i<4;i++){const blade=box(rotor,.2,2.9,.08,P.wood,0,0,0);blade.rotation.z=i*Math.PI/2;}}else if(x===71){ball(g,1.5,P.cliffDark,0,1,0);for(let i=0;i<2;i++){ball(g,.5,P.coffee,-.5+i,2,0,1,.5,1.8);ball(g,.27,P.coffee,-.5+i,2.4,.6);}}else if(x===104){cyl(g,.55,2.3,P.cream,0,1.8,0,8);cyl(g,.7,.45,P.terra,0,3.05,0,8);}else tree(g,0,0,.8);}
+ for(const [x0,z0,r] of decorations){const x=x0*1.3,z=z0*1.3,g=group(scene,x,-3.5,z);const shore=coastline(r,x*.1,72);const isle=new T.Mesh(islet(shore,.55,.05,1.2,P.grass),new T.MeshStandardMaterial({color:'white',vertexColors:true,side:T.DoubleSide}));isle.receiveShadow=true;g.add(isle);/* 10/25 小島也圓滑 */if(x===-55){for(let i=0;i<3;i++)umbrella(g,-1.6+i*1.6,0,[P.pink,P.mustard,P.sage][i]);}else if(x===-43&&z===-45){cyl(g,.55,3,P.cream,0,2,0,8,1);const rotor=group(g,0,3,-.7);for(let i=0;i<4;i++){const blade=box(rotor,.2,2.9,.08,P.wood,0,0,0);blade.rotation.z=i*Math.PI/2;}}else if(x===71){ball(g,1.5,P.cliffDark,0,1,0);for(let i=0;i<2;i++){ball(g,.5,P.coffee,-.5+i,2,0,1,.5,1.8);ball(g,.27,P.coffee,-.5+i,2.4,.6);}}else if(x===104){cyl(g,.55,2.3,P.cream,0,1.8,0,8);cyl(g,.7,.45,P.terra,0,3.05,0,8);}else tree(g,0,0,.8);}
  // A tiny sailboat and a buoy, still in section ①.
  const sail=group(scene,100,-3.5,-34);const hull=ball(sail,1,P.cream,0,.2,0,1.7,.35,.65);cyl(sail,.04,3,P.darkWood,0,1.6,0,6);const shape=new T.Shape();shape.moveTo(.08,.7);shape.lineTo(.08,2.9);shape.lineTo(1.4,.7);shape.closePath();const sm=new T.Mesh(new T.ShapeGeometry(shape),new T.MeshStandardMaterial({color:P.pink,side:T.DoubleSide}));sail.add(sm);cyl(scene,.3,1,P.mustard,90,-3.3,28,10);
  // Broad clouds with no frame loop animation in this first section.
  for(const [x,y,z] of [[-50,28,-65],[25,32,-85],[90,27,-55]]){const c=group(scene,x,y,z);for(let i=0;i<4;i++)ball(c,3.5,P.cream,i*3.7,Math.sin(i)*1.2,0,1.2,.6,.7);}
  // Foreground grass is below the islands; its edge acts as a frame.
- const near=group(scene,-48,-4,58);ball(near,22,'#E2D4AE',0,-2,0,1,.14,1);tree(near,0,2,1.7,true);tree(near,12,1,1.3,true);
+ const near=group(scene,-48,-4,58);blob(near,22,'#E2D4AE',0,-2,0,1,.14,1);tree(near,0,2,1.7,true);tree(near,12,1,1.3,true);
  const track=buildTrack(scene,islands,rails);
  // 10/23 熊爸：開團廣場牌樓 → 東北角碼頭的石板步道；跟鐵軌交叉處是平交道（電車讓人先過）。
  let crossing=null,marketWalk=null;{const M=islands.get('market');if(M){const a=dockAngle('market'),e=coastRadius(a,M.r,M.seed,'market')*.95,base=[Math.sin(a)*e*.86,Math.cos(a)*e*.86],gate=[4.6,-.5];path(M.g,gate,base,1.5);marketWalk={gate,base};
@@ -125,7 +127,7 @@ export function createScene(data,onSelect,onGuest,onHost,onCreature){
  const xs=[...islands.values()].map(I=>I.p.x),zs=[...islands.values()].map(I=>I.p.z);const target=new T.Vector3((Math.min(...xs)+Math.max(...xs))/2,mobile()?9:0,(Math.min(...zs)+Math.max(...zs))/2),direction=new T.Vector3(mobile()?1.15:.28,mobile()?1.15:.42,mobile()?.8:1).normalize();
  const right=new T.Vector3(direction.z,0,-direction.x).normalize(),up=new T.Vector3().crossVectors(direction,right).normalize();
  let halfW=0,halfH=0;for(const I of islands.values())for(let k=0;k<8;k++){const a=k*Math.PI/4,v=new T.Vector3(I.p.x+Math.sin(a)*I.r*1.4,0,I.p.z+Math.cos(a)*I.r*1.4).sub(target);halfW=Math.max(halfW,Math.abs(v.dot(right)));halfH=Math.max(halfH,Math.abs(v.dot(up)));}
- const tan=Math.tan(T.MathUtils.degToRad(camera.fov/2)),aspect=innerWidth/innerHeight,dist=Math.max(halfW/(tan*aspect)*1.2,halfH/tan*1.5,120);overviewDist=dist;const pos=target.clone().add(direction.multiplyScalar(dist));scene.fog.near=Math.max(260,dist*1.1);scene.fog.far=Math.max(700,dist*3);
+ const tan=Math.tan(T.MathUtils.degToRad(camera.fov/2)),aspect=innerWidth/innerHeight,dist=Math.max(halfW/(tan*aspect)*1.2,halfH/tan*1.5,120);overviewDist=dist;const pos=target.clone().add(direction.multiplyScalar(dist));scene.fog.near=dist+Math.max(halfW,halfH)*1.3+40;scene.fog.far=scene.fog.near+330;   // 10/25 ①：遠景霧氣——島群（距鏡頭 dist±60 內）清楚，地平線綠地淡進天色
 
  if(animate)move(target,pos);else{controls.target.copy(target);camera.position.copy(pos);controls.update();}dirty=true;}
  function focus(id){const I=islands.get(id);if(!I)return;selected=id;scene.fog.near=210;scene.fog.far=420;for(const v of islands.values())v.ring.visible=v===I;labelItems.forEach(l=>l.button.classList.toggle('selected',l.id===id));
